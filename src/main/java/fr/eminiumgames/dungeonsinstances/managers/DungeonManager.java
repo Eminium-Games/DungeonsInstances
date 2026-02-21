@@ -7,9 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -19,8 +17,6 @@ public class DungeonManager {
 
     private final Map<String, World> dungeonCache = new HashMap<>();
     private final File dungeonTemplatesFolder = new File("templates-dungeons");
-    private final Set<String> editModeWorlds = new HashSet<>();
-
     public void loadDungeonTemplate(String templateName) {
         File templateFolder = new File(dungeonTemplatesFolder, templateName);
         Bukkit.getLogger().info("Attempting to load template: " + templateName);
