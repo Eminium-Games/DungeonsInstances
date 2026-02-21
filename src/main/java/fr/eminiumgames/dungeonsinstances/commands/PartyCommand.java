@@ -34,6 +34,10 @@ public class PartyCommand implements CommandExecutor {
                     return true;
                 }
                 String partyName = args[1];
+                if (!partyName.matches("^[a-zA-Z0-9_-]+$")) {
+                    player.sendMessage("Invalid party name. Only letters, numbers, underscores, and hyphens are allowed.");
+                    return true;
+                }
                 if (partyManager.createParty(partyName, player)) {
                     player.sendMessage("Party '" + partyName + "' created successfully.");
                 } else {

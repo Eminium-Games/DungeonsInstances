@@ -27,6 +27,17 @@ public class DungeonTabCompleter implements TabCompleter {
             }
         }
 
+        if (args.length == 2 && args[0].equalsIgnoreCase("instance")) {
+            File templatesFolder = new File(DUNGEON_TEMPLATES_FOLDER);
+            if (templatesFolder.exists() && templatesFolder.isDirectory()) {
+                for (File file : templatesFolder.listFiles()) {
+                    if (file.isDirectory()) {
+                        suggestions.add(file.getName());
+                    }
+                }
+            }
+        }
+
         return suggestions;
     }
 }

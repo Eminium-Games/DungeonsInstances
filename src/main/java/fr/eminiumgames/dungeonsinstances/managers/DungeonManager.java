@@ -15,10 +15,13 @@ import org.bukkit.WorldCreator;
 public class DungeonManager {
 
     private final Map<String, World> dungeonCache = new HashMap<>();
-    private final File dungeonTemplatesFolder = new File("dungeons-templates");
+    private final File dungeonTemplatesFolder = new File("templates-dungeons");
 
     public void loadDungeonTemplate(String templateName) {
         File templateFolder = new File(dungeonTemplatesFolder, templateName);
+        Bukkit.getLogger().info("Attempting to load template: " + templateName);
+        Bukkit.getLogger().info("Looking for template folder at: " + templateFolder.getAbsolutePath());
+
         if (!templateFolder.exists() || !templateFolder.isDirectory()) {
             Bukkit.getLogger().warning("Template " + templateName + " does not exist or is not a directory.");
             return;
@@ -36,19 +39,19 @@ public class DungeonManager {
 
     public World createDungeonInstance(String templateName, String instanceName) {
         if (!dungeonCache.containsKey(templateName)) {
-            Bukkit.getLogger().warning("Template " + templateName + " is not loaded.");
+            Bukkit.getLogger().warning("Template " + templateName + " is not loaded. Please ensure the template is loaded before creating an instance.");
             return null;
         }
 
         File instanceFolder = new File(Bukkit.getWorldContainer(), instanceName);
         if (instanceFolder.exists()) {
-            Bukkit.getLogger().warning("Dungeon instance " + instanceName + " already exists.");
+            Bukkit.getLogger().warning("Dungeon instance " + instanceName + " already exists. Please use a unique instance name.");
             return null;
         }
 
         File templateFolder = new File(Bukkit.getWorldContainer(), templateName);
         if (!templateFolder.exists() || !templateFolder.isDirectory()) {
-            Bukkit.getLogger().warning("Template folder for " + templateName + " does not exist.");
+            Bukkit.getLogger().warning("Template folder for " + templateName + " does not exist or is not a directory. Please check the templates-dungeons folder.");
             return null;
         }
 
@@ -56,8 +59,14 @@ public class DungeonManager {
             // Copy the template folder to create a new instance
             copyFolder(templateFolder.toPath(), instanceFolder.toPath());
         } catch (IOException e) {
-            Bukkit.getLogger().severe("Failed to create dungeon instance: " + e.getMessage());
+            Bukkit.getLogger().severe("Failed to create dungeon instance: " + e.getMessage() + ". Ensure the server has write permissions.");
             return null;
+        }
+
+        // Delete the uid.dat file to avoid duplicate world issues
+        File uidFile = new File(instanceFolder, "uid.dat");
+        if (uidFile.exists() && !uidFile.delete()) {
+            Bukkit.getLogger().warning("Failed to delete uid.dat in " + instanceFolder.getAbsolutePath());
         }
 
         // Load the new instance as a world
@@ -65,7 +74,7 @@ public class DungeonManager {
         if (instance != null) {
             Bukkit.getLogger().info("Created dungeon instance: " + instanceName);
         } else {
-            Bukkit.getLogger().warning("Failed to load dungeon instance: " + instanceName);
+            Bukkit.getLogger().warning("Failed to load dungeon instance: " + instanceName + ". Check if the world folder is valid.");
         }
         return instance;
     }
@@ -75,9 +84,25 @@ public class DungeonManager {
         if (world != null) {
             Bukkit.unloadWorld(world, false);
             Bukkit.getLogger().info("Unloaded dungeon instance: " + instanceName);
+
+            // Delete the instance folder
+            File instanceFolder = new File(Bukkit.getWorldContainer(), instanceName);
+            if (instanceFolder.exists()) {
+                deleteFolder(instanceFolder);
+                Bukkit.getLogger().info("Deleted dungeon instance folder: " + instanceFolder.getAbsolutePath());
+            }
         } else {
             Bukkit.getLogger().warning("Dungeon instance " + instanceName + " is not loaded.");
         }
+    }
+
+    private void deleteFolder(File folder) {
+        if (folder.isDirectory()) {
+            for (File file : folder.listFiles()) {
+                deleteFolder(file);
+            }
+        }
+        folder.delete();
     }
 
     private void copyFolder(Path source, Path target) throws IOException {
