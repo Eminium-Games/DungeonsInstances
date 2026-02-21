@@ -1,7 +1,7 @@
 name: DungeonInstances
 version: 1.0.0
 main: fr.eminiumgames.dungeonsinstances.DungeonInstances
-api: 1.19
+api: '1.19'
 api-version: '1.19'
 description: Plugin pour gérer les instances de donjons dans Minecraft
 authors:

@@ -23,6 +23,9 @@ public class DungeonInstances extends JavaPlugin implements Listener {
     private PartyManager partyManager;
     private DungeonScoreboardManager scoreboardManager;
 
+    // remember the world a player died in so respawn logic can use it
+    private final java.util.Map<java.util.UUID, String> deathWorlds = new java.util.HashMap<>();
+
     @Override
     public void onEnable() {
         instance = this;
@@ -50,12 +53,14 @@ public class DungeonInstances extends JavaPlugin implements Listener {
                 }
             }
         } else {
-            getLogger().warning("The templates-dungeons folder does not exist or is not a directory. No dungeon templates were loaded.");
+            getLogger().warning(
+                    "The templates-dungeons folder does not exist or is not a directory. No dungeon templates were loaded.");
         }
 
         // Purge all instance worlds on plugin reload
         File worldContainer = Bukkit.getWorldContainer();
-        File[] instanceFolders = worldContainer.listFiles((file) -> file.isDirectory() && file.getName().startsWith("instance_"));
+        File[] instanceFolders = worldContainer
+                .listFiles((file) -> file.isDirectory() && file.getName().startsWith("instance_"));
 
         if (instanceFolders != null) {
             for (File instanceFolder : instanceFolders) {
@@ -119,6 +124,82 @@ public class DungeonInstances extends JavaPlugin implements Listener {
             if (previousWorld.getPlayers().isEmpty()) {
                 dungeonManager.unloadDungeonInstance(previousWorld.getName());
             }
+        }
+    }
+
+    /**
+     * Remember the world of a player's death. We store this here instead of
+     * relying on event.getPlayer().getWorld() in the respawn listener because
+     * by the time PlayerRespawnEvent fires the player has already been moved to
+     * the respawn world, which is exactly what was tripping us up.
+     */
+    @EventHandler
+    public void onPlayerDeath(org.bukkit.event.entity.PlayerDeathEvent event) {
+        if (event.getEntity() != null) {
+            Bukkit.getLogger()
+                    .info("[DungeonInstances] PlayerDeathEvent triggered in " + event.getEntity().getWorld().getName());
+            deathWorlds.put(event.getEntity().getUniqueId(), event.getEntity().getWorld().getName());
+        }
+    }
+
+    /**
+     * Ensure that players who die inside a dungeon instance respawn at the
+     * configured spawn point for that dungeon (or the world spawn if none is
+     * defined) rather than at the global lobby.
+     */
+    @EventHandler
+    public void onPlayerRespawn(org.bukkit.event.player.PlayerRespawnEvent event) {
+        Player player = event.getPlayer();
+        World world = player.getWorld();
+        String worldName = world.getName();
+
+        // Always log where the respawn event is fired, for diagnostic purposes.
+        Bukkit.getLogger().info("[DungeonInstances] PlayerRespawnEvent triggered in " + worldName);
+        player.sendMessage("[DungeonInstances] Respawn event fired in world " + worldName);
+
+        // if there is a recorded death world use that instead of current world
+        String deathWorld = deathWorlds.remove(player.getUniqueId());
+        if (deathWorld != null) {
+            Bukkit.getLogger().info("[DungeonInstances] player died in " + deathWorld);
+            player.sendMessage("[DungeonInstances] You died in " + deathWorld);
+            worldName = deathWorld;
+            world = Bukkit.getWorld(worldName);
+        }
+
+        if (worldName != null && worldName.startsWith("instance_")) {
+            String remainder = worldName.substring("instance_".length());
+            // template name is everything before the last underscore (uuid)
+            int lastIdx = remainder.lastIndexOf('_');
+            String templateName = lastIdx == -1 ? remainder : remainder.substring(0, lastIdx);
+
+            Bukkit.getLogger().info("[DungeonInstances] resolving spawn for template '" + templateName + "'");
+            Bukkit.getLogger()
+                    .info("[DungeonInstances] event default respawn location was " + event.getRespawnLocation());
+            Bukkit.getLogger().info("[DungeonInstances] world spawn location is " + world.getSpawnLocation());
+            // can't access the private map directly; we'll infer from spawnLoc below
+
+            org.bukkit.Location spawnLoc = dungeonManager.getSpawnLocation(templateName, world);
+            Bukkit.getLogger().info("[DungeonInstances] computed spawnLoc = " + spawnLoc);
+
+            if (spawnLoc == null) {
+                Bukkit.getLogger().warning("[DungeonInstances] no spawn point found for template '"
+                        + templateName + "' in world " + worldName + "; using world spawn");
+                spawnLoc = world.getSpawnLocation();
+            }
+            final org.bukkit.Location finalSpawnLoc = spawnLoc;
+            final String finalWorldName = deathWorld;
+            // force respawn location even if the chosen location is the same as default
+            // event.setRespawnLocation(finalSpawnLoc);
+            Bukkit.getLogger().info("[DungeonInstances] setting respawn location to " + finalSpawnLoc);
+            Bukkit.getScheduler().runTaskLater(this, () -> {
+
+                World respawnWorld = Bukkit.getWorld(finalWorldName);
+                org.bukkit.Location finalspawnLoc = dungeonManager.getSpawnLocation(templateName, respawnWorld);
+
+                player.teleport(finalspawnLoc);
+                Bukkit.getLogger().info("[DungeonInstances] player teleported to " + finalspawnLoc);
+            }, 20L); // delay by 1 tick to ensure it happens after the default respawn logic
+            // player.teleport(finalSpawnLoc);
         }
     }
 }
