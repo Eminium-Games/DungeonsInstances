@@ -25,7 +25,9 @@ public class DungeonCommand implements CommandExecutor {
         Player player = (Player) sender;
 
         if (args.length < 1) {
-            player.sendMessage("Usage: /dungeon <subcommand> [arguments]");
+            player.sendMessage("Available subcommands:");
+            player.sendMessage("/dungeon admin <dungeon-name> - Admin commands for dungeons");
+            player.sendMessage("/dungeon instance <dungeon-name> - Create a dungeon instance");
             return true;
         }
 
@@ -91,6 +93,14 @@ public class DungeonCommand implements CommandExecutor {
                 player.sendMessage("Failed to create dungeon instance.");
             }
 
+            return true;
+        }
+
+        // Handle unknown subcommands
+        if (!subCommand.equals("admin") && !subCommand.equals("instance")) {
+            player.sendMessage("Unknown subcommand. Available subcommands:");
+            player.sendMessage("/dungeon admin <dungeon-name> - Admin commands for dungeons");
+            player.sendMessage("/dungeon instance <dungeon-name> - Create a dungeon instance");
             return true;
         }
 

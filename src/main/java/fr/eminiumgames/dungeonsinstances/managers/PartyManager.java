@@ -81,8 +81,15 @@ public class PartyManager {
     }
 
     private void saveParties() {
-        try (FileWriter writer = new FileWriter(partyDataFile)) {
-            gson.toJson(parties, writer);
+        try {
+            // Ensure the directory exists
+            if (!partyDataFile.getParentFile().exists()) {
+                partyDataFile.getParentFile().mkdirs();
+            }
+
+            try (FileWriter writer = new FileWriter(partyDataFile)) {
+                gson.toJson(parties, writer);
+            }
         } catch (IOException e) {
             Bukkit.getLogger().severe("Failed to save party data: " + e.getMessage());
         }
