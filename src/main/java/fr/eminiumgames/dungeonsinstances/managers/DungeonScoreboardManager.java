@@ -20,10 +20,11 @@ public class DungeonScoreboardManager {
     private final Map<UUID, Scoreboard> activeScoreboards = new HashMap<>();
     private int taskId = -1;
 
-    private static final String[] ARROWS = {"↑", "↗", "→", "↘", "↓", "↙", "←", "↖"};
+    private static final String[] ARROWS = { "↑", "↗", "→", "↘", "↓", "↙", "←", "↖" };
 
     public void start() {
-        taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(DungeonInstances.getInstance(), this::updateAll, 0L, 10L); // every 0.5s
+        taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(DungeonInstances.getInstance(), this::updateAll, 0L,
+                10L); // every 0.5s
     }
 
     public void stop() {
@@ -86,9 +87,9 @@ public class DungeonScoreboardManager {
 
         @SuppressWarnings("deprecation")
         Objective objective = board.registerNewObjective("dungeon", "dummy",
-                ChatColor.DARK_PURPLE + "✦ " + ChatColor.BOLD + "Donjon" + ChatColor.RESET + ChatColor.DARK_PURPLE + " ✦");
+                ChatColor.DARK_PURPLE + "✦ " + ChatColor.BOLD + "Donjon" + ChatColor.RESET + ChatColor.DARK_PURPLE
+                        + " ✦");
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-
 
         // objective.getScore(ChatColor.DARK_GRAY + "───────────").setScore(score--);
 
@@ -105,7 +106,8 @@ public class DungeonScoreboardManager {
             if (member == null || !member.isOnline()) {
                 // Offline member
                 String offlineName = Bukkit.getOfflinePlayer(memberId).getName();
-                if (offlineName == null) offlineName = "???";
+                if (offlineName == null)
+                    offlineName = "???";
                 String line = ChatColor.DARK_GRAY + "✘ " + ChatColor.GRAY + ChatColor.STRIKETHROUGH + offlineName;
                 objective.getScore(line).setScore(score--);
                 continue;
@@ -129,7 +131,6 @@ public class DungeonScoreboardManager {
             if (memberId.equals(player.getUniqueId())) {
                 arrow = ChatColor.AQUA + "★";
             } else if (member.getWorld().equals(player.getWorld())) {
-                System.err.println("Calculating direction from " + player.getLocation() + " to " + member.getLocation());
                 arrow = ChatColor.WHITE + getDirectionArrow(player.getLocation(), member.getLocation());
             } else {
                 arrow = ChatColor.GRAY + "?";

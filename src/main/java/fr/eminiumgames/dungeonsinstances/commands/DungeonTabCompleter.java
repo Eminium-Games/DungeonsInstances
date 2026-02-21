@@ -29,8 +29,8 @@ public class DungeonTabCompleter implements TabCompleter {
                 suggestions.add("admin");
             }
             return suggestions.stream()
-                .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
-                .collect(Collectors.toList());
+                    .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
+                    .collect(Collectors.toList());
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("admin")) {
@@ -39,8 +39,8 @@ public class DungeonTabCompleter implements TabCompleter {
             suggestions.add("purge");
             suggestions.add("setspawn");
             return suggestions.stream()
-                .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
-                .collect(Collectors.toList());
+                    .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
+                    .collect(Collectors.toList());
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("instance")) {
@@ -64,15 +64,15 @@ public class DungeonTabCompleter implements TabCompleter {
                 }
             }
             return suggestions.stream()
-                .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
-                .collect(Collectors.toList());
+                    .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
+                    .collect(Collectors.toList());
         }
 
         if (args.length == 3 && args[0].equalsIgnoreCase("admin") && args[1].equalsIgnoreCase("save")) {
             List<String> worldNames = Bukkit.getWorlds().stream()
-                .map(World::getName)
-                .filter(name -> name.startsWith("editmode_"))
-                .collect(Collectors.toList());
+                    .map(World::getName)
+                    .filter(name -> name.startsWith("editmode_"))
+                    .collect(Collectors.toList());
             return worldNames;
         }
 
@@ -87,8 +87,8 @@ public class DungeonTabCompleter implements TabCompleter {
             suggestions.add("disband");
             suggestions.add("members");
             return suggestions.stream()
-                .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
-                .collect(Collectors.toList());
+                    .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
+                    .collect(Collectors.toList());
         }
 
         if (args.length == 3 && args[0].equalsIgnoreCase("party") && args[1].equalsIgnoreCase("invite")) {
@@ -100,8 +100,8 @@ public class DungeonTabCompleter implements TabCompleter {
                 }
             }
             return suggestions.stream()
-                .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
-                .collect(Collectors.toList());
+                    .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
+                    .collect(Collectors.toList());
         }
 
         return suggestions;

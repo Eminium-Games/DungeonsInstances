@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -71,16 +72,19 @@ public class DungeonCommand implements CommandExecutor {
                         return true;
                     }
 
-                    editWorld = DungeonInstances.getInstance().getDungeonManager().createDungeonInstance(templateName, editWorldName);
+                    editWorld = DungeonInstances.getInstance().getDungeonManager().createDungeonInstance(templateName,
+                            editWorldName);
                     if (editWorld != null) {
                         // Pass only the template name to setEditMode
-                        // DungeonInstances.getInstance().getDungeonManager().setEditMode(templateName, true);
+                        // DungeonInstances.getInstance().getDungeonManager().setEditMode(templateName,
+                        // true);
 
                         // Teleport the player to the editing instance
                         player.teleport(editWorld.getSpawnLocation());
                         player.sendMessage("You are now editing the dungeon template: " + templateName);
                     } else {
-                        player.sendMessage("Failed to create an editing instance for the dungeon template: " + templateName);
+                        player.sendMessage(
+                                "Failed to create an editing instance for the dungeon template: " + templateName);
                     }
 
                     break;
@@ -112,7 +116,9 @@ public class DungeonCommand implements CommandExecutor {
                     }
 
                     // Save changes from the editing instance back to the template
-                    File templatesFolder = new File(DungeonInstances.getInstance().getDataFolder().getParentFile().getParentFile(), "templates-dungeons");
+                    File templatesFolder = new File(
+                            DungeonInstances.getInstance().getDataFolder().getParentFile().getParentFile(),
+                            "templates-dungeons");
                     File templateFolder = new File(templatesFolder, worldNameToSave.replace("editmode_", ""));
                     File editWorldFolder = new File(Bukkit.getWorldContainer(), worldNameToSave);
 
@@ -128,16 +134,19 @@ public class DungeonCommand implements CommandExecutor {
                     DungeonInstances.getInstance().getDungeonManager().unloadDungeonInstance(worldNameToSave);
                     player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
 
-                    player.sendMessage("The dungeon template '" + worldNameToSave.replace("editmode_", "") + "' has been updated with the changes from the editing instance.");
+                    player.sendMessage("The dungeon template '" + worldNameToSave.replace("editmode_", "")
+                            + "' has been updated with the changes from the editing instance.");
                     break;
 
                 case "purge":
                     File worldContainer = Bukkit.getWorldContainer();
-                    File[] instanceFolders = worldContainer.listFiles((file) -> file.isDirectory() && file.getName().startsWith("instance_"));
+                    File[] instanceFolders = worldContainer
+                            .listFiles((file) -> file.isDirectory() && file.getName().startsWith("instance_"));
 
                     if (instanceFolders != null) {
                         for (File instanceFolder : instanceFolders) {
-                            DungeonInstances.getInstance().getDungeonManager().unloadDungeonInstance(instanceFolder.getName());
+                            DungeonInstances.getInstance().getDungeonManager()
+                                    .unloadDungeonInstance(instanceFolder.getName());
                             deleteFolder(instanceFolder);
                         }
                         player.sendMessage("All dungeon instances have been purged.");
@@ -151,15 +160,18 @@ public class DungeonCommand implements CommandExecutor {
                     String currentWorldName = currentWorld.getName();
 
                     if (!currentWorldName.startsWith("editmode_")) {
-                        player.sendMessage(PREFIX + ChatColor.RED + "Vous devez être dans un monde en mode édition (editmode_) pour définir le spawn.");
+                        player.sendMessage(PREFIX + ChatColor.RED
+                                + "Vous devez être dans un monde en mode édition (editmode_) pour définir le spawn.");
                         return true;
                     }
 
                     String spawnTemplateName = currentWorldName.replace("editmode_", "");
                     Location spawnLoc = player.getLocation();
                     DungeonInstances.getInstance().getDungeonManager().setSpawnPoint(spawnTemplateName, spawnLoc);
-                    player.sendMessage(PREFIX + ChatColor.GREEN + "Spawn du donjon " + ChatColor.LIGHT_PURPLE + spawnTemplateName + ChatColor.GREEN + " défini à votre position !");
-                    player.sendMessage(PREFIX + ChatColor.GRAY + "X: " + String.format("%.1f", spawnLoc.getX()) + " Y: " + String.format("%.1f", spawnLoc.getY()) + " Z: " + String.format("%.1f", spawnLoc.getZ()));
+                    player.sendMessage(PREFIX + ChatColor.GREEN + "Spawn du donjon " + ChatColor.LIGHT_PURPLE
+                            + spawnTemplateName + ChatColor.GREEN + " défini à votre position !");
+                    player.sendMessage(PREFIX + ChatColor.GRAY + "X: " + String.format("%.1f", spawnLoc.getX()) + " Y: "
+                            + String.format("%.1f", spawnLoc.getY()) + " Z: " + String.format("%.1f", spawnLoc.getZ()));
                     break;
 
                 default:
@@ -185,28 +197,103 @@ public class DungeonCommand implements CommandExecutor {
             }
 
             if (!party.getLeader().equals(player.getUniqueId())) {
-                player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Seul le chef du groupe peut lancer une instance de donjon.");
+                player.sendMessage(
+                        PARTY_PREFIX + ChatColor.RED + "Seul le chef du groupe peut lancer une instance de donjon.");
                 return true;
             }
 
-            World instance = DungeonInstances.getInstance().getDungeonManager().createDungeonInstance(dungeonName, "instance_" + dungeonName + "_" + UUID.randomUUID());
+            World instance = DungeonInstances.getInstance().getDungeonManager().createDungeonInstance(dungeonName,
+                    "instance_" + dungeonName + "_" + UUID.randomUUID());
             if (instance != null) {
-                partyManager.broadcastToParty(party, PARTY_PREFIX + ChatColor.GREEN + "Le donjon " + ChatColor.LIGHT_PURPLE + dungeonName + ChatColor.GREEN + " a été lancé par " + ChatColor.AQUA + player.getName() + ChatColor.GREEN + " !");
-                partyManager.broadcastToParty(party, PARTY_PREFIX + ChatColor.YELLOW + "Téléportation dans 10 secondes...");
+                partyManager.broadcastToParty(party,
+                        PARTY_PREFIX + ChatColor.GREEN + "Le donjon " + ChatColor.LIGHT_PURPLE + dungeonName
+                                + ChatColor.GREEN + " a été lancé par " + ChatColor.AQUA + player.getName()
+                                + ChatColor.GREEN + " !");
+                partyManager.broadcastToParty(party,
+                        PARTY_PREFIX + ChatColor.YELLOW + "Téléportation dans 10 secondes...");
 
                 final World dungeonWorld = instance;
-                final Location spawnLocation = DungeonInstances.getInstance().getDungeonManager().getSpawnLocation(dungeonName, dungeonWorld);
+                final Location spawnLocation = DungeonInstances.getInstance().getDungeonManager()
+                        .getSpawnLocation(dungeonName, dungeonWorld);
+
+                // We iterate members list to play wither sound immediately to give feedback
+                // that the instance is launching, then schedule the teleport and countdown
+                // messages/sounds
+                for (UUID memberId : party.getMembers()) {
+                    Player member = Bukkit.getPlayer(memberId);
+                    if (member != null && member.isOnline()) {
+                        try {
+                            member.playSound(member.getLocation(), Sound.ENTITY_WITHER_SPAWN, 2.0f, 1.0f);
+                        } catch (NoSuchFieldError | IllegalArgumentException ignored) {
+                        }
+                        // member.sendMessage(PARTY_PREFIX + ChatColor.YELLOW + "Le donjon " +
+                        // ChatColor.LIGHT_PURPLE
+                        // + dungeonName + ChatColor.YELLOW + " est en train de se lancer...");
+                    }
+                }
+
+                // Schedule countdown sounds/messages at 3s, 2s and 1s before teleport
+                long teleportDelay = 200L; // 10 seconds
+                long t3 = teleportDelay - 60L; // 3 seconds before
+                long t2 = teleportDelay - 40L; // 2 seconds before
+                long t1 = teleportDelay - 20L; // 1 second before
+
+                Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
+                    for (UUID memberId : party.getMembers()) {
+                        Player member = Bukkit.getPlayer(memberId);
+                        if (member != null && member.isOnline()) {
+                            try {
+                                member.playSound(member.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 0.6f);
+                            } catch (NoSuchFieldError | IllegalArgumentException ignored) {
+                            }
+                            member.sendMessage(PREFIX + ChatColor.YELLOW + "3...");
+                        }
+                    }
+                }, t3);
+
+                Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
+                    for (UUID memberId : party.getMembers()) {
+                        Player member = Bukkit.getPlayer(memberId);
+                        if (member != null && member.isOnline()) {
+                            try {
+                                member.playSound(member.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 0.9f);
+                            } catch (NoSuchFieldError | IllegalArgumentException ignored) {
+                            }
+                            member.sendMessage(PREFIX + ChatColor.YELLOW + "2...");
+                        }
+                    }
+                }, t2);
+
+                Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
+                    for (UUID memberId : party.getMembers()) {
+                        Player member = Bukkit.getPlayer(memberId);
+                        if (member != null && member.isOnline()) {
+                            try {
+                                member.playSound(member.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.2f);
+                            } catch (NoSuchFieldError | IllegalArgumentException ignored) {
+                            }
+                            member.sendMessage(PREFIX + ChatColor.YELLOW + "1...");
+                        }
+                    }
+                }, t1);
+
+                // Final teleport task
                 Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
                     for (UUID memberId : party.getMembers()) {
                         Player member = Bukkit.getPlayer(memberId);
                         if (member != null && member.isOnline()) {
                             // store previous world before teleporting into the instance
-                            DungeonInstances.getInstance().getPartyManager().setPreviousWorld(member.getUniqueId(), member.getWorld().getName());
+                            DungeonInstances.getInstance().getPartyManager().setPreviousWorld(member.getUniqueId(),
+                                    member.getWorld().getName());
+
                             member.teleport(spawnLocation);
-                            member.sendMessage(PREFIX + ChatColor.GREEN + "Vous avez été téléporté dans le donjon : " + ChatColor.LIGHT_PURPLE + dungeonName);
+                            member.sendMessage(PREFIX + ChatColor.GREEN + "Vous avez été téléporté dans le donjon : "
+                                    + ChatColor.LIGHT_PURPLE + dungeonName);
+
+                            member.playSound(member.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 2.0f, 1.0f);
                         }
                     }
-                }, 200L); // 200 ticks = 10 secondes
+                }, teleportDelay); // 200 ticks = 10 secondes
             } else {
                 player.sendMessage(PREFIX + ChatColor.RED + "Échec de la création de l'instance de donjon.");
             }
@@ -215,7 +302,9 @@ public class DungeonCommand implements CommandExecutor {
         }
 
         if (subCommand.equals("list")) {
-            File templatesFolder = new File(DungeonInstances.getInstance().getDataFolder().getParentFile().getParentFile(), "templates-dungeons");
+            File templatesFolder = new File(
+                    DungeonInstances.getInstance().getDataFolder().getParentFile().getParentFile(),
+                    "templates-dungeons");
 
             if (!templatesFolder.exists() || !templatesFolder.isDirectory()) {
                 player.sendMessage(PREFIX + ChatColor.RED + "Le dossier templates-dungeons n'existe pas.");
@@ -247,7 +336,8 @@ public class DungeonCommand implements CommandExecutor {
             PartyManager partyManager = DungeonInstances.getInstance().getPartyManager();
             PartyManager.Party currentParty = partyManager.getPartyByPlayer(player);
             if (currentParty != null) {
-                partyManager.broadcastToParty(currentParty, PARTY_PREFIX + ChatColor.AQUA + player.getName() + ChatColor.YELLOW + " a quitté le donjon.");
+                partyManager.broadcastToParty(currentParty,
+                        PARTY_PREFIX + ChatColor.AQUA + player.getName() + ChatColor.YELLOW + " a quitté le donjon.");
             }
 
             // Teleport player to spawn or a safe location
@@ -266,7 +356,8 @@ public class DungeonCommand implements CommandExecutor {
             PartyManager partyManager = DungeonInstances.getInstance().getPartyManager();
 
             if (args.length < 2) {
-                player.sendMessage(PARTY_PREFIX + ChatColor.YELLOW + "Utilisation: /dungeon party <create|invite|accept|decline|leave|list|members>");
+                player.sendMessage(PARTY_PREFIX + ChatColor.YELLOW
+                        + "Utilisation: /dungeon party <create|invite|accept|decline|leave|list|members>");
                 return true;
             }
 
@@ -286,12 +377,14 @@ public class DungeonCommand implements CommandExecutor {
                     partyName = partyName.replaceAll("\\s+", "_");
 
                     if (!partyName.matches("^[a-zA-Z0-9_-]+$")) {
-                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Nom de groupe invalide. Seuls les lettres, chiffres, tirets et underscores sont autorisés.");
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED
+                                + "Nom de groupe invalide. Seuls les lettres, chiffres, tirets et underscores sont autorisés.");
                         return true;
                     }
 
                     if (partyManager.createParty(partyName, player)) {
-                        player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Le groupe " + ChatColor.LIGHT_PURPLE + partyName + ChatColor.GREEN + " a été créé avec succès !");
+                        player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Le groupe " + ChatColor.LIGHT_PURPLE
+                                + partyName + ChatColor.GREEN + " a été créé avec succès !");
                     } else {
                         player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Un groupe avec ce nom existe déjà.");
                     }
@@ -299,12 +392,14 @@ public class DungeonCommand implements CommandExecutor {
 
                 case "invite":
                     if (args.length < 3) {
-                        player.sendMessage(PARTY_PREFIX + ChatColor.YELLOW + "Utilisation: /dungeon party invite <joueur>");
+                        player.sendMessage(
+                                PARTY_PREFIX + ChatColor.YELLOW + "Utilisation: /dungeon party invite <joueur>");
                         return true;
                     }
                     Player target = Bukkit.getPlayer(args[2]);
                     if (target == null || !target.isOnline()) {
-                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Le joueur " + ChatColor.AQUA + args[2] + ChatColor.RED + " n'est pas en ligne.");
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Le joueur " + ChatColor.AQUA + args[2]
+                                + ChatColor.RED + " n'est pas en ligne.");
                         return true;
                     }
                     if (target.equals(player)) {
@@ -317,11 +412,13 @@ public class DungeonCommand implements CommandExecutor {
                         return true;
                     }
                     if (!inviterParty.getLeader().equals(player.getUniqueId())) {
-                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Seul le chef du groupe peut inviter des joueurs.");
+                        player.sendMessage(
+                                PARTY_PREFIX + ChatColor.RED + "Seul le chef du groupe peut inviter des joueurs.");
                         return true;
                     }
                     if (partyManager.invitePlayer(player, target)) {
-                        player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Invitation envoyée à " + ChatColor.AQUA + target.getName() + ChatColor.GREEN + " !");
+                        player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Invitation envoyée à " + ChatColor.AQUA
+                                + target.getName() + ChatColor.GREEN + " !");
                     }
                     break;
 
@@ -362,10 +459,12 @@ public class DungeonCommand implements CommandExecutor {
                         player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Vous n'êtes dans aucun groupe.");
                         return true;
                     }
-                    player.sendMessage(PARTY_PREFIX + ChatColor.YELLOW + "Membres du groupe " + ChatColor.LIGHT_PURPLE + memberParty.getName() + ChatColor.YELLOW + " :");
+                    player.sendMessage(PARTY_PREFIX + ChatColor.YELLOW + "Membres du groupe " + ChatColor.LIGHT_PURPLE
+                            + memberParty.getName() + ChatColor.YELLOW + " :");
                     for (UUID memberId : memberParty.getMembers()) {
                         Player member = Bukkit.getPlayer(memberId);
-                        String memberName = member != null ? member.getName() : Bukkit.getOfflinePlayer(memberId).getName();
+                        String memberName = member != null ? member.getName()
+                                : Bukkit.getOfflinePlayer(memberId).getName();
                         StringBuilder tags = new StringBuilder();
                         if (memberId.equals(memberParty.getLeader())) {
                             tags.append(ChatColor.GOLD + " (Leader)");
@@ -373,14 +472,16 @@ public class DungeonCommand implements CommandExecutor {
                         if (memberId.equals(player.getUniqueId())) {
                             tags.append(ChatColor.GREEN + " (Vous)");
                         }
-                        String status = (member != null && member.isOnline()) ? ChatColor.GREEN + "●" : ChatColor.RED + "●";
+                        String status = (member != null && member.isOnline()) ? ChatColor.GREEN + "●"
+                                : ChatColor.RED + "●";
                         player.sendMessage(" " + status + " " + ChatColor.AQUA + memberName + tags.toString());
                     }
                     break;
 
                 case "kick":
                     if (args.length < 3) {
-                        player.sendMessage(PARTY_PREFIX + ChatColor.YELLOW + "Utilisation: /dungeon party kick <joueur>");
+                        player.sendMessage(
+                                PARTY_PREFIX + ChatColor.YELLOW + "Utilisation: /dungeon party kick <joueur>");
                         return true;
                     }
                     String targetName = args[2];
@@ -390,7 +491,8 @@ public class DungeonCommand implements CommandExecutor {
                         return true;
                     }
                     if (!leaderParty.getLeader().equals(player.getUniqueId())) {
-                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Seul le chef du groupe peut expulser un membre.");
+                        player.sendMessage(
+                                PARTY_PREFIX + ChatColor.RED + "Seul le chef du groupe peut expulser un membre.");
                         return true;
                     }
 
@@ -404,12 +506,14 @@ public class DungeonCommand implements CommandExecutor {
                     }
 
                     if (targetId == null || !leaderParty.getMembers().contains(targetId)) {
-                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Le joueur " + ChatColor.AQUA + targetName + ChatColor.RED + " n'est pas dans votre groupe.");
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Le joueur " + ChatColor.AQUA + targetName
+                                + ChatColor.RED + " n'est pas dans votre groupe.");
                         return true;
                     }
 
                     if (partyManager.kickMember(leaderParty, targetId)) {
-                        player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Le joueur " + ChatColor.AQUA + targetName + ChatColor.GREEN + " a été expulsé du groupe.");
+                        player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Le joueur " + ChatColor.AQUA + targetName
+                                + ChatColor.GREEN + " a été expulsé du groupe.");
                     } else {
                         player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Impossible d'expulser le joueur.");
                     }
@@ -422,18 +526,21 @@ public class DungeonCommand implements CommandExecutor {
                         return true;
                     }
                     if (!p.getLeader().equals(player.getUniqueId())) {
-                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Seul le chef du groupe peut dissoudre le groupe.");
+                        player.sendMessage(
+                                PARTY_PREFIX + ChatColor.RED + "Seul le chef du groupe peut dissoudre le groupe.");
                         return true;
                     }
                     if (partyManager.disbandParty(p)) {
-                        player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Le groupe " + ChatColor.LIGHT_PURPLE + p.getName() + ChatColor.GREEN + " a été dissous.");
+                        player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Le groupe " + ChatColor.LIGHT_PURPLE
+                                + p.getName() + ChatColor.GREEN + " a été dissous.");
                     } else {
                         player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Impossible de dissoudre le groupe.");
                     }
                     break;
 
                 default:
-                    player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Sous-commande inconnue. " + ChatColor.YELLOW + "Utilisation: /dungeon party <create|invite|accept|decline|leave|list|members>");
+                    player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Sous-commande inconnue. " + ChatColor.YELLOW
+                            + "Utilisation: /dungeon party <create|invite|accept|decline|leave|list|members>");
                     break;
             }
             return true;
@@ -441,7 +548,8 @@ public class DungeonCommand implements CommandExecutor {
 
         if (subCommand.equals("admin") && args.length > 1 && args[1].equalsIgnoreCase("purge")) {
             File worldContainer = Bukkit.getWorldContainer();
-            File[] instanceFolders = worldContainer.listFiles((file) -> file.isDirectory() && file.getName().startsWith("instance_"));
+            File[] instanceFolders = worldContainer
+                    .listFiles((file) -> file.isDirectory() && file.getName().startsWith("instance_"));
 
             if (instanceFolders != null) {
                 for (File instanceFolder : instanceFolders) {
@@ -467,7 +575,9 @@ public class DungeonCommand implements CommandExecutor {
             }
 
             // Save changes from the editing instance back to the template
-            File templatesFolder = new File(DungeonInstances.getInstance().getDataFolder().getParentFile().getParentFile(), "templates-dungeons");
+            File templatesFolder = new File(
+                    DungeonInstances.getInstance().getDataFolder().getParentFile().getParentFile(),
+                    "templates-dungeons");
             File templateFolder = new File(templatesFolder, templateName);
             File editWorldFolder = new File(Bukkit.getWorldContainer(), editWorldName);
 
@@ -482,7 +592,8 @@ public class DungeonCommand implements CommandExecutor {
             // Unload and delete the editing instance
             DungeonInstances.getInstance().getDungeonManager().unloadDungeonInstance(editWorldName);
 
-            player.sendMessage("The dungeon template '" + templateName + "' has been updated with the changes from the editing instance.");
+            player.sendMessage("The dungeon template '" + templateName
+                    + "' has been updated with the changes from the editing instance.");
             return true;
         }
 
@@ -490,7 +601,9 @@ public class DungeonCommand implements CommandExecutor {
             String templateName = args[2];
 
             // Check if the template exists
-            File templatesFolder = new File(DungeonInstances.getInstance().getDataFolder().getParentFile().getParentFile(), "templates-dungeons");
+            File templatesFolder = new File(
+                    DungeonInstances.getInstance().getDataFolder().getParentFile().getParentFile(),
+                    "templates-dungeons");
             File templateFolder = new File(templatesFolder, templateName);
 
             if (!templateFolder.exists() || !templateFolder.isDirectory()) {
@@ -508,10 +621,12 @@ public class DungeonCommand implements CommandExecutor {
                 return true;
             }
 
-            editWorld = DungeonInstances.getInstance().getDungeonManager().createDungeonInstance(templateName, editWorldName);
+            editWorld = DungeonInstances.getInstance().getDungeonManager().createDungeonInstance(templateName,
+                    editWorldName);
             if (editWorld != null) {
                 // Pass only the template name to setEditMode
-                // DungeonInstances.getInstance().getDungeonManager().setEditMode(templateName, true);
+                // DungeonInstances.getInstance().getDungeonManager().setEditMode(templateName,
+                // true);
 
                 // Teleport the player to the editing instance
                 player.teleport(editWorld.getSpawnLocation());
@@ -522,7 +637,8 @@ public class DungeonCommand implements CommandExecutor {
         }
 
         // Handle unknown subcommands
-        if (!subCommand.equals("admin") && !subCommand.equals("instance") && !subCommand.equals("list") && !subCommand.equals("leave") && !subCommand.equals("party")) {
+        if (!subCommand.equals("admin") && !subCommand.equals("instance") && !subCommand.equals("list")
+                && !subCommand.equals("leave") && !subCommand.equals("party")) {
             player.sendMessage("Unknown subcommand. Available subcommands:");
             player.sendMessage("/dungeon instance <dungeon-name> - Create a dungeon instance");
             return true;
@@ -537,7 +653,8 @@ public class DungeonCommand implements CommandExecutor {
         String templateName = args[0];
         String instanceName = args[1];
 
-        World instance = DungeonInstances.getInstance().getDungeonManager().createDungeonInstance(templateName, instanceName);
+        World instance = DungeonInstances.getInstance().getDungeonManager().createDungeonInstance(templateName,
+                instanceName);
         if (instance != null) {
             player.teleport(instance.getSpawnLocation());
             player.sendMessage("Teleported to dungeon instance: " + instanceName);

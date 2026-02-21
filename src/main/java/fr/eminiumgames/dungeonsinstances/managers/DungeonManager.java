@@ -39,7 +39,8 @@ public class DungeonManager {
         public double x, y, z;
         public float yaw, pitch;
 
-        public SpawnPoint() {}
+        public SpawnPoint() {
+        }
 
         public SpawnPoint(double x, double y, double z, float yaw, float pitch) {
             this.x = x;
@@ -56,9 +57,8 @@ public class DungeonManager {
 
     public void setSpawnPoint(String templateName, Location location) {
         spawnPoints.put(templateName, new SpawnPoint(
-            location.getX(), location.getY(), location.getZ(),
-            location.getYaw(), location.getPitch()
-        ));
+                location.getX(), location.getY(), location.getZ(),
+                location.getYaw(), location.getPitch()));
         saveSpawnPoints();
     }
 
@@ -88,7 +88,8 @@ public class DungeonManager {
             return;
         }
         try (FileReader reader = new FileReader(spawnDataFile)) {
-            Map<String, SpawnPoint> loaded = gson.fromJson(reader, new TypeToken<Map<String, SpawnPoint>>() {}.getType());
+            Map<String, SpawnPoint> loaded = gson.fromJson(reader, new TypeToken<Map<String, SpawnPoint>>() {
+            }.getType());
             if (loaded != null) {
                 spawnPoints.putAll(loaded);
             }
@@ -96,6 +97,7 @@ public class DungeonManager {
             Bukkit.getLogger().severe("Failed to load spawn points: " + e.getMessage());
         }
     }
+
     public void loadDungeonTemplate(String templateName) {
         File templateFolder = new File(dungeonTemplatesFolder, templateName);
         Bukkit.getLogger().info("Attempting to load template: " + templateName);
@@ -118,19 +120,22 @@ public class DungeonManager {
 
     public World createDungeonInstance(String templateName, String instanceName) {
         if (!dungeonCache.containsKey(templateName)) {
-            Bukkit.getLogger().warning("Template " + templateName + " is not loaded. Please ensure the template is loaded before creating an instance.");
+            Bukkit.getLogger().warning("Template " + templateName
+                    + " is not loaded. Please ensure the template is loaded before creating an instance.");
             return null;
         }
 
         File instanceFolder = new File(Bukkit.getWorldContainer(), instanceName);
         if (instanceFolder.exists()) {
-            Bukkit.getLogger().warning("Dungeon instance " + instanceName + " already exists. Please use a unique instance name.");
+            Bukkit.getLogger().warning(
+                    "Dungeon instance " + instanceName + " already exists. Please use a unique instance name.");
             return null;
         }
 
         File templateFolder = new File(Bukkit.getWorldContainer(), templateName);
         if (!templateFolder.exists() || !templateFolder.isDirectory()) {
-            Bukkit.getLogger().warning("Template folder for " + templateName + " does not exist or is not a directory. Please check the templates-dungeons folder.");
+            Bukkit.getLogger().warning("Template folder for " + templateName
+                    + " does not exist or is not a directory. Please check the templates-dungeons folder.");
             return null;
         }
 
@@ -138,7 +143,8 @@ public class DungeonManager {
             // Copy the template folder to create a new instance
             copyFolder(templateFolder.toPath(), instanceFolder.toPath());
         } catch (IOException e) {
-            Bukkit.getLogger().severe("Failed to create dungeon instance: " + e.getMessage() + ". Ensure the server has write permissions.");
+            Bukkit.getLogger().severe("Failed to create dungeon instance: " + e.getMessage()
+                    + ". Ensure the server has write permissions.");
             return null;
         }
 
@@ -153,7 +159,8 @@ public class DungeonManager {
         if (instance != null) {
             Bukkit.getLogger().info("Created dungeon instance: " + instanceName);
         } else {
-            Bukkit.getLogger().warning("Failed to load dungeon instance: " + instanceName + ". Check if the world folder is valid.");
+            Bukkit.getLogger().warning(
+                    "Failed to load dungeon instance: " + instanceName + ". Check if the world folder is valid.");
         }
         return instance;
     }
