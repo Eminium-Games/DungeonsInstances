@@ -19,9 +19,15 @@ import org.bukkit.entity.Player;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+
 public class PartyManager {
 
     private final Map<String, Party> parties = new HashMap<>();
+    private final Map<UUID, String> pendingInvites = new HashMap<>(); // invitedPlayer -> partyName
     private final File partyDataFile = new File("plugins/DungeonInstances/partyData.json");
     private final Gson gson = new Gson();
 
@@ -33,7 +39,7 @@ public class PartyManager {
 
     public boolean createParty(String partyName, Player leader) {
         if (parties.containsKey(partyName)) {
-            return false; // Party already exists
+            return false;
         }
         Party party = new Party(partyName, leader);
         parties.put(partyName, party);
@@ -41,23 +47,87 @@ public class PartyManager {
         return true;
     }
 
-    public boolean joinParty(String partyName, Player player) {
+    @SuppressWarnings("deprecation")
+    public boolean invitePlayer(Player inviter, Player target) {
+        Party party = getPartyByPlayer(inviter);
+        if (party == null) {
+            return false;
+        }
+        if (!party.getLeader().equals(inviter.getUniqueId())) {
+            return false;
+        }
+        if (party.hasMember(target)) {
+            inviter.sendMessage(PREFIX + ChatColor.RED + target.getName() + " est déjà dans le groupe.");
+            return false;
+        }
+        if (pendingInvites.containsKey(target.getUniqueId())) {
+            inviter.sendMessage(PREFIX + ChatColor.RED + target.getName() + " a déjà une invitation en attente.");
+            return false;
+        }
+
+        pendingInvites.put(target.getUniqueId(), party.getName());
+
+        // Send clickable invite message to target
+        TextComponent message = new TextComponent(PREFIX + ChatColor.AQUA + inviter.getName() + ChatColor.GREEN + " vous invite à rejoindre le groupe " + ChatColor.LIGHT_PURPLE + party.getName() + ChatColor.GREEN + " !");
+        target.spigot().sendMessage(message);
+
+        TextComponent acceptBtn = new TextComponent(ChatColor.GREEN + "" + ChatColor.BOLD + "[Accepter]");
+        acceptBtn.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dungeon party accept"));
+        acceptBtn.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GREEN + "Cliquez pour accepter l'invitation").create()));
+
+        TextComponent space = new TextComponent("  ");
+
+        TextComponent declineBtn = new TextComponent(ChatColor.RED + "" + ChatColor.BOLD + "[Refuser]");
+        declineBtn.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dungeon party decline"));
+        declineBtn.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.RED + "Cliquez pour refuser l'invitation").create()));
+
+        TextComponent buttons = new TextComponent("");
+        buttons.addExtra(acceptBtn);
+        buttons.addExtra(space);
+        buttons.addExtra(declineBtn);
+        target.spigot().sendMessage(buttons);
+
+        // Notify the party
+        broadcastToParty(party, PREFIX + ChatColor.AQUA + inviter.getName() + ChatColor.YELLOW + " a invité " + ChatColor.AQUA + target.getName() + ChatColor.YELLOW + " dans le groupe.");
+
+        return true;
+    }
+
+    public boolean acceptInvite(Player player) {
+        String partyName = pendingInvites.remove(player.getUniqueId());
+        if (partyName == null) {
+            return false;
+        }
         Party party = parties.get(partyName);
         if (party == null) {
-            return false; // Party does not exist
+            return false;
         }
-        boolean added = party.addMember(player);
-        if (added) {
-            broadcastToParty(party, PREFIX + ChatColor.AQUA + player.getName() + ChatColor.GREEN + " a rejoint le groupe !");
-            saveParties();
+        party.addMember(player);
+        broadcastToParty(party, PREFIX + ChatColor.AQUA + player.getName() + ChatColor.GREEN + " a rejoint le groupe !");
+        saveParties();
+        return true;
+    }
+
+    public boolean declineInvite(Player player) {
+        String partyName = pendingInvites.remove(player.getUniqueId());
+        if (partyName == null) {
+            return false;
         }
-        return added;
+        Party party = parties.get(partyName);
+        if (party != null) {
+            broadcastToParty(party, PREFIX + ChatColor.AQUA + player.getName() + ChatColor.RED + " a refusé l'invitation.");
+        }
+        return true;
+    }
+
+    public boolean hasPendingInvite(Player player) {
+        return pendingInvites.containsKey(player.getUniqueId());
     }
 
     public boolean leaveParty(Player player) {
         Party party = getPartyByPlayer(player);
         if (party == null) {
-            return false; // Player is not in a party
+            return false;
         }
         party.removeMember(player);
         broadcastToParty(party, PREFIX + ChatColor.AQUA + player.getName() + ChatColor.RED + " a quitté le groupe.");
@@ -100,11 +170,9 @@ public class PartyManager {
 
     private void saveParties() {
         try {
-            // Ensure the directory exists
             if (!partyDataFile.getParentFile().exists()) {
                 partyDataFile.getParentFile().mkdirs();
             }
-
             try (FileWriter writer = new FileWriter(partyDataFile)) {
                 gson.toJson(parties, writer);
             }

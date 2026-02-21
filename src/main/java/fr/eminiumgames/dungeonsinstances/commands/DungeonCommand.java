@@ -263,7 +263,7 @@ public class DungeonCommand implements CommandExecutor {
             PartyManager partyManager = DungeonInstances.getInstance().getPartyManager();
 
             if (args.length < 2) {
-                player.sendMessage(PARTY_PREFIX + ChatColor.YELLOW + "Utilisation: /dungeon party <create|join|leave|list> [nom-du-groupe]");
+                player.sendMessage(PARTY_PREFIX + ChatColor.YELLOW + "Utilisation: /dungeon party <create|invite|accept|decline|leave|list|members>");
                 return true;
             }
 
@@ -287,16 +287,47 @@ public class DungeonCommand implements CommandExecutor {
                     }
                     break;
 
-                case "join":
+                case "invite":
                     if (args.length < 3) {
-                        player.sendMessage(PARTY_PREFIX + ChatColor.YELLOW + "Utilisation: /dungeon party join <nom-du-groupe>");
+                        player.sendMessage(PARTY_PREFIX + ChatColor.YELLOW + "Utilisation: /dungeon party invite <joueur>");
                         return true;
                     }
-                    partyName = args[2];
-                    if (partyManager.joinParty(partyName, player)) {
-                        player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Vous avez rejoint le groupe " + ChatColor.LIGHT_PURPLE + partyName + ChatColor.GREEN + " !");
+                    Player target = Bukkit.getPlayer(args[2]);
+                    if (target == null || !target.isOnline()) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Le joueur " + ChatColor.AQUA + args[2] + ChatColor.RED + " n'est pas en ligne.");
+                        return true;
+                    }
+                    if (target.equals(player)) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Vous ne pouvez pas vous inviter vous-même.");
+                        return true;
+                    }
+                    PartyManager.Party inviterParty = partyManager.getPartyByPlayer(player);
+                    if (inviterParty == null) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Vous n'êtes dans aucun groupe.");
+                        return true;
+                    }
+                    if (!inviterParty.getLeader().equals(player.getUniqueId())) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Seul le chef du groupe peut inviter des joueurs.");
+                        return true;
+                    }
+                    if (partyManager.invitePlayer(player, target)) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Invitation envoyée à " + ChatColor.AQUA + target.getName() + ChatColor.GREEN + " !");
+                    }
+                    break;
+
+                case "accept":
+                    if (partyManager.acceptInvite(player)) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Vous avez accepté l'invitation !");
                     } else {
-                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Impossible de rejoindre le groupe. Il n'existe pas ou vous êtes déjà dans un groupe.");
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Vous n'avez aucune invitation en attente.");
+                    }
+                    break;
+
+                case "decline":
+                    if (partyManager.declineInvite(player)) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Vous avez refusé l'invitation.");
+                    } else {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Vous n'avez aucune invitation en attente.");
                     }
                     break;
 
@@ -315,8 +346,30 @@ public class DungeonCommand implements CommandExecutor {
                     }
                     break;
 
+                case "members":
+                    PartyManager.Party memberParty = partyManager.getPartyByPlayer(player);
+                    if (memberParty == null) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Vous n'êtes dans aucun groupe.");
+                        return true;
+                    }
+                    player.sendMessage(PARTY_PREFIX + ChatColor.YELLOW + "Membres du groupe " + ChatColor.LIGHT_PURPLE + memberParty.getName() + ChatColor.YELLOW + " :");
+                    for (UUID memberId : memberParty.getMembers()) {
+                        Player member = Bukkit.getPlayer(memberId);
+                        String memberName = member != null ? member.getName() : Bukkit.getOfflinePlayer(memberId).getName();
+                        StringBuilder tags = new StringBuilder();
+                        if (memberId.equals(memberParty.getLeader())) {
+                            tags.append(ChatColor.GOLD + " (Leader)");
+                        }
+                        if (memberId.equals(player.getUniqueId())) {
+                            tags.append(ChatColor.GREEN + " (Vous)");
+                        }
+                        String status = (member != null && member.isOnline()) ? ChatColor.GREEN + "●" : ChatColor.RED + "●";
+                        player.sendMessage(" " + status + " " + ChatColor.AQUA + memberName + tags.toString());
+                    }
+                    break;
+
                 default:
-                    player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Sous-commande inconnue. " + ChatColor.YELLOW + "Utilisation: /dungeon party <create|join|leave|list> [nom-du-groupe]");
+                    player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Sous-commande inconnue. " + ChatColor.YELLOW + "Utilisation: /dungeon party <create|invite|accept|decline|leave|list|members>");
                     break;
             }
             return true;

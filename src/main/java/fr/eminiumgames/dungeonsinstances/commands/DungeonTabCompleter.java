@@ -10,8 +10,7 @@ import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-
-import fr.eminiumgames.dungeonsinstances.DungeonInstances;
+import org.bukkit.entity.Player;
 
 public class DungeonTabCompleter implements TabCompleter {
 
@@ -79,17 +78,24 @@ public class DungeonTabCompleter implements TabCompleter {
 
         if (args.length == 2 && args[0].equalsIgnoreCase("party")) {
             suggestions.add("create");
-            suggestions.add("join");
+            suggestions.add("invite");
+            suggestions.add("accept");
+            suggestions.add("decline");
             suggestions.add("leave");
             suggestions.add("list");
+            suggestions.add("members");
             return suggestions.stream()
                 .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
                 .collect(Collectors.toList());
         }
 
-        if (args.length == 3 && args[0].equalsIgnoreCase("party") && args[1].equalsIgnoreCase("join")) {
-            for (String name : DungeonInstances.getInstance().getPartyManager().listPartyNames()) {
-                suggestions.add(name);
+        if (args.length == 3 && args[0].equalsIgnoreCase("party") && args[1].equalsIgnoreCase("invite")) {
+            if (sender instanceof Player) {
+                for (Player online : Bukkit.getOnlinePlayers()) {
+                    if (!online.equals(sender)) {
+                        suggestions.add(online.getName());
+                    }
+                }
             }
             return suggestions.stream()
                 .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
