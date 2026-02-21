@@ -53,32 +53,76 @@ public class DungeonCommand implements CommandExecutor {
                         return true;
                     }
 
-                    String worldName = args[2];
-                    World world = Bukkit.getWorld(worldName);
-                    if (world == null) {
-                        player.sendMessage("The world '" + worldName + "' does not exist.");
+                    String templateName = args[2];
+
+                    // Create a specialized editing instance with a name starting with 'editmode_'
+                    String editWorldName = "editmode_" + templateName;
+                    World editWorld = Bukkit.getWorld(editWorldName);
+
+                    if (editWorld != null) {
+                        player.sendMessage("The dungeon template '" + templateName + "' is already in edit mode.");
+                        player.teleport(editWorld.getSpawnLocation());
                         return true;
                     }
 
-                    DungeonInstances.getInstance().getDungeonManager().setEditMode(worldName, true);
-                    player.teleport(world.getSpawnLocation());
-                    player.sendMessage("The dungeon world '" + worldName + "' is now in edit mode.");
+                    editWorld = DungeonInstances.getInstance().getDungeonManager().createDungeonInstance(templateName, editWorldName);
+                    if (editWorld != null) {
+                        // Pass only the template name to setEditMode
+                        // DungeonInstances.getInstance().getDungeonManager().setEditMode(templateName, true);
+
+                        // Teleport the player to the editing instance
+                        player.teleport(editWorld.getSpawnLocation());
+                        player.sendMessage("You are now editing the dungeon template: " + templateName);
+                    } else {
+                        player.sendMessage("Failed to create an editing instance for the dungeon template: " + templateName);
+                    }
+
                     break;
 
                 case "save":
+                    String worldNameToSave;
                     if (args.length < 3) {
-                        player.sendMessage("Usage: /dungeon admin save <world-name>");
+                        World currentWorld = player.getWorld();
+                        if (!currentWorld.getName().startsWith("editmode_")) {
+                            player.sendMessage("You must specify a world to save or be in an edit mode world.");
+                            return true;
+                        }
+                        worldNameToSave = currentWorld.getName();
+                    } else {
+                        worldNameToSave = args[2];
+                    }
+
+                    Bukkit.getLogger().info("[Save Command] World name to save: " + worldNameToSave);
+
+                    if (!worldNameToSave.startsWith("editmode_")) {
+                        player.sendMessage("The specified world is not an edit mode world.");
                         return true;
                     }
 
-                    worldName = args[2];
-                    if (!DungeonInstances.getInstance().getDungeonManager().isEditMode(worldName)) {
-                        player.sendMessage("The world '" + worldName + "' is not in edit mode.");
+                    if (!DungeonInstances.getInstance().getDungeonManager().isEditMode(worldNameToSave)) {
+                        player.sendMessage("The world '" + worldNameToSave + "' is not in edit mode.");
+                        Bukkit.getLogger().info("[Save Command] World '" + worldNameToSave + "' is not in edit mode.");
                         return true;
                     }
 
-                    DungeonInstances.getInstance().getDungeonManager().setEditMode(worldName, false);
-                    player.sendMessage("The dungeon world '" + worldName + "' has been saved and is no longer in edit mode.");
+                    // Save changes from the editing instance back to the template
+                    File templatesFolder = new File(DungeonInstances.getInstance().getDataFolder().getParentFile().getParentFile(), "templates-dungeons");
+                    File templateFolder = new File(templatesFolder, worldNameToSave.replace("editmode_", ""));
+                    File editWorldFolder = new File(Bukkit.getWorldContainer(), worldNameToSave);
+
+                    if (!editWorldFolder.exists() || !editWorldFolder.isDirectory()) {
+                        player.sendMessage("The editing instance for '" + worldNameToSave + "' does not exist.");
+                        return true;
+                    }
+
+                    // Copy the edited world back to the template folder
+                    DungeonInstances.getInstance().getDungeonManager().copyWorld(editWorldFolder, templateFolder);
+
+                    // Unload the world and teleport the player back to the main world
+                    DungeonInstances.getInstance().getDungeonManager().unloadDungeonInstance(worldNameToSave);
+                    player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
+
+                    player.sendMessage("The dungeon template '" + worldNameToSave.replace("editmode_", "") + "' has been updated with the changes from the editing instance.");
                     break;
 
                 case "purge":
@@ -240,8 +284,8 @@ public class DungeonCommand implements CommandExecutor {
                 return true;
             }
 
-            // Create a specialized editing instance
-            String editWorldName = "edit_" + templateName;
+            // Create a specialized editing instance with a name starting with 'editmode_'
+            String editWorldName = "editmode_" + templateName;
             World editWorld = Bukkit.getWorld(editWorldName);
 
             if (editWorld != null) {
@@ -252,7 +296,8 @@ public class DungeonCommand implements CommandExecutor {
 
             editWorld = DungeonInstances.getInstance().getDungeonManager().createDungeonInstance(templateName, editWorldName);
             if (editWorld != null) {
-                DungeonInstances.getInstance().getDungeonManager().setEditMode(editWorldName, true);
+                // Pass only the template name to setEditMode
+                // DungeonInstances.getInstance().getDungeonManager().setEditMode(templateName, true);
 
                 // Teleport the player to the editing instance
                 player.teleport(editWorld.getSpawnLocation());
@@ -260,8 +305,6 @@ public class DungeonCommand implements CommandExecutor {
             } else {
                 player.sendMessage("Failed to create an editing instance for the dungeon template: " + templateName);
             }
-
-            return true;
         }
 
         // Handle unknown subcommands

@@ -40,6 +40,7 @@ public class DungeonTabCompleter implements TabCompleter {
         if (args.length == 3 && args[0].equalsIgnoreCase("admin") && (args[1].equalsIgnoreCase("edit") || args[1].equalsIgnoreCase("save"))) {
             List<String> worldNames = Bukkit.getWorlds().stream()
                 .map(World::getName)
+                .filter(name -> name.startsWith("editmode_"))
                 .collect(Collectors.toList());
             return worldNames;
         }

@@ -2,6 +2,7 @@ package fr.eminiumgames.dungeonsinstances.managers;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -108,17 +109,23 @@ public class DungeonManager {
         folder.delete();
     }
 
-    public void copyFolder(Path source, Path target) throws IOException {
+    private void copyFolder(Path source, Path target) throws IOException {
         Files.walk(source).forEach(path -> {
             try {
                 Path targetPath = target.resolve(source.relativize(path));
                 if (Files.isDirectory(path)) {
                     Files.createDirectories(targetPath);
                 } else {
+                    // Skip locked files like session.lock or inaccessible files
+                    if (path.getFileName().toString().equals("session.lock")) {
+                        return;
+                    }
                     Files.copy(path, targetPath, StandardCopyOption.REPLACE_EXISTING);
                 }
+            } catch (AccessDeniedException e) {
+                Bukkit.getLogger().warning("Access denied to file: " + path + ". Skipping...");
             } catch (IOException e) {
-                throw new RuntimeException("Failed to copy folder: " + e.getMessage(), e);
+                throw new RuntimeException("Failed to copy folder: " + path + ". Error: " + e.getMessage(), e);
             }
         });
     }
@@ -131,15 +138,7 @@ public class DungeonManager {
         }
     }
 
-    public void setEditMode(String worldName, boolean editMode) {
-        if (editMode) {
-            editModeWorlds.add(worldName);
-        } else {
-            editModeWorlds.remove(worldName);
-        }
-    }
-
     public boolean isEditMode(String worldName) {
-        return editModeWorlds.contains(worldName);
+        return worldName.startsWith("editmode_");
     }
 }
