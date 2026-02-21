@@ -6,7 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -16,6 +18,7 @@ public class DungeonManager {
 
     private final Map<String, World> dungeonCache = new HashMap<>();
     private final File dungeonTemplatesFolder = new File("templates-dungeons");
+    private final Set<String> editModeWorlds = new HashSet<>();
 
     public void loadDungeonTemplate(String templateName) {
         File templateFolder = new File(dungeonTemplatesFolder, templateName);
@@ -96,7 +99,7 @@ public class DungeonManager {
         }
     }
 
-    private void deleteFolder(File folder) {
+    public void deleteFolder(File folder) {
         if (folder.isDirectory()) {
             for (File file : folder.listFiles()) {
                 deleteFolder(file);
@@ -105,7 +108,7 @@ public class DungeonManager {
         folder.delete();
     }
 
-    private void copyFolder(Path source, Path target) throws IOException {
+    public void copyFolder(Path source, Path target) throws IOException {
         Files.walk(source).forEach(path -> {
             try {
                 Path targetPath = target.resolve(source.relativize(path));
@@ -118,5 +121,25 @@ public class DungeonManager {
                 throw new RuntimeException("Failed to copy folder: " + e.getMessage(), e);
             }
         });
+    }
+
+    public void copyWorld(File source, File target) {
+        try {
+            copyFolder(source.toPath(), target.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to copy world: " + e.getMessage(), e);
+        }
+    }
+
+    public void setEditMode(String worldName, boolean editMode) {
+        if (editMode) {
+            editModeWorlds.add(worldName);
+        } else {
+            editModeWorlds.remove(worldName);
+        }
+    }
+
+    public boolean isEditMode(String worldName) {
+        return editModeWorlds.contains(worldName);
     }
 }

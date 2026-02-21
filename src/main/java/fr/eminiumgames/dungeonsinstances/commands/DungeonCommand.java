@@ -26,7 +26,6 @@ public class DungeonCommand implements CommandExecutor {
 
         if (args.length < 1) {
             player.sendMessage("Available subcommands:");
-            player.sendMessage("/dungeon admin <dungeon-name> - Admin commands for dungeons");
             player.sendMessage("/dungeon instance <dungeon-name> - Create a dungeon instance");
             return true;
         }
@@ -40,22 +39,67 @@ public class DungeonCommand implements CommandExecutor {
             }
 
             if (args.length < 2) {
-                player.sendMessage("Usage: /dungeon admin <dungeon-name>");
+                player.sendMessage("Usage: /dungeon admin <subcommand>");
+                player.sendMessage("Available subcommands: edit, save, purge");
                 return true;
             }
 
-            String dungeonName = args[1];
-            File templatesFolder = new File(DungeonInstances.getInstance().getDataFolder().getParentFile().getParentFile(), "templates-dungeons");
-            File dungeonFolder = new File(templatesFolder, dungeonName);
+            String adminSubCommand = args[1].toLowerCase();
 
-            if (!dungeonFolder.exists() || !dungeonFolder.isDirectory()) {
-                player.sendMessage("Dungeon template '" + dungeonName + "' does not exist.");
-                return true;
+            switch (adminSubCommand) {
+                case "edit":
+                    if (args.length < 3) {
+                        player.sendMessage("Usage: /dungeon admin edit <world-name>");
+                        return true;
+                    }
+
+                    String worldName = args[2];
+                    World world = Bukkit.getWorld(worldName);
+                    if (world == null) {
+                        player.sendMessage("The world '" + worldName + "' does not exist.");
+                        return true;
+                    }
+
+                    DungeonInstances.getInstance().getDungeonManager().setEditMode(worldName, true);
+                    player.teleport(world.getSpawnLocation());
+                    player.sendMessage("The dungeon world '" + worldName + "' is now in edit mode.");
+                    break;
+
+                case "save":
+                    if (args.length < 3) {
+                        player.sendMessage("Usage: /dungeon admin save <world-name>");
+                        return true;
+                    }
+
+                    worldName = args[2];
+                    if (!DungeonInstances.getInstance().getDungeonManager().isEditMode(worldName)) {
+                        player.sendMessage("The world '" + worldName + "' is not in edit mode.");
+                        return true;
+                    }
+
+                    DungeonInstances.getInstance().getDungeonManager().setEditMode(worldName, false);
+                    player.sendMessage("The dungeon world '" + worldName + "' has been saved and is no longer in edit mode.");
+                    break;
+
+                case "purge":
+                    File worldContainer = Bukkit.getWorldContainer();
+                    File[] instanceFolders = worldContainer.listFiles((file) -> file.isDirectory() && file.getName().startsWith("instance_"));
+
+                    if (instanceFolders != null) {
+                        for (File instanceFolder : instanceFolders) {
+                            DungeonInstances.getInstance().getDungeonManager().unloadDungeonInstance(instanceFolder.getName());
+                            deleteFolder(instanceFolder);
+                        }
+                        player.sendMessage("All dungeon instances have been purged.");
+                    } else {
+                        player.sendMessage("No dungeon instances found to purge.");
+                    }
+                    break;
+
+                default:
+                    player.sendMessage("Unknown admin subcommand. Available subcommands: edit, save, purge");
+                    break;
             }
-
-            player.sendMessage("Admin command executed for dungeon: " + dungeonName);
-            // Add additional admin logic here
-
             return true;
         }
 
@@ -154,10 +198,75 @@ public class DungeonCommand implements CommandExecutor {
             return true;
         }
 
+        if (subCommand.equals("admin") && args.length > 2 && args[1].equalsIgnoreCase("save")) {
+            String templateName = args[2];
+            String editWorldName = "edit_" + templateName;
+
+            // Check if the world is in edit mode
+            if (!DungeonInstances.getInstance().getDungeonManager().isEditMode(editWorldName)) {
+                player.sendMessage("The world '" + editWorldName + "' is not in edit mode.");
+                return true;
+            }
+
+            // Save changes from the editing instance back to the template
+            File templatesFolder = new File(DungeonInstances.getInstance().getDataFolder().getParentFile().getParentFile(), "templates-dungeons");
+            File templateFolder = new File(templatesFolder, templateName);
+            File editWorldFolder = new File(Bukkit.getWorldContainer(), editWorldName);
+
+            if (!editWorldFolder.exists() || !editWorldFolder.isDirectory()) {
+                player.sendMessage("The editing instance for '" + templateName + "' does not exist.");
+                return true;
+            }
+
+            // Copy the edited world back to the template folder
+            DungeonInstances.getInstance().getDungeonManager().copyWorld(editWorldFolder, templateFolder);
+
+            // Unload and delete the editing instance
+            DungeonInstances.getInstance().getDungeonManager().unloadDungeonInstance(editWorldName);
+
+            player.sendMessage("The dungeon template '" + templateName + "' has been updated with the changes from the editing instance.");
+            return true;
+        }
+
+        if (subCommand.equals("admin") && args.length > 2 && args[1].equalsIgnoreCase("edit")) {
+            String templateName = args[2];
+
+            // Check if the template exists
+            File templatesFolder = new File(DungeonInstances.getInstance().getDataFolder().getParentFile().getParentFile(), "templates-dungeons");
+            File templateFolder = new File(templatesFolder, templateName);
+
+            if (!templateFolder.exists() || !templateFolder.isDirectory()) {
+                player.sendMessage("Dungeon template '" + templateName + "' does not exist.");
+                return true;
+            }
+
+            // Create a specialized editing instance
+            String editWorldName = "edit_" + templateName;
+            World editWorld = Bukkit.getWorld(editWorldName);
+
+            if (editWorld != null) {
+                player.sendMessage("The dungeon template '" + templateName + "' is already in edit mode.");
+                player.teleport(editWorld.getSpawnLocation());
+                return true;
+            }
+
+            editWorld = DungeonInstances.getInstance().getDungeonManager().createDungeonInstance(templateName, editWorldName);
+            if (editWorld != null) {
+                DungeonInstances.getInstance().getDungeonManager().setEditMode(editWorldName, true);
+
+                // Teleport the player to the editing instance
+                player.teleport(editWorld.getSpawnLocation());
+                player.sendMessage("You are now editing the dungeon template: " + templateName);
+            } else {
+                player.sendMessage("Failed to create an editing instance for the dungeon template: " + templateName);
+            }
+
+            return true;
+        }
+
         // Handle unknown subcommands
         if (!subCommand.equals("admin") && !subCommand.equals("instance") && !subCommand.equals("list") && !subCommand.equals("leave")) {
             player.sendMessage("Unknown subcommand. Available subcommands:");
-            player.sendMessage("/dungeon admin <dungeon-name> - Admin commands for dungeons");
             player.sendMessage("/dungeon instance <dungeon-name> - Create a dungeon instance");
             return true;
         }
