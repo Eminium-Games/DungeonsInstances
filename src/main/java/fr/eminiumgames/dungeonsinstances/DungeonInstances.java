@@ -5,6 +5,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import fr.eminiumgames.dungeonsinstances.commands.DungeonCommand;
 import fr.eminiumgames.dungeonsinstances.commands.DungeonTabCompleter;
 import fr.eminiumgames.dungeonsinstances.commands.PartyCommand;
+import fr.eminiumgames.dungeonsinstances.commands.PartyTabCompleter;
 import fr.eminiumgames.dungeonsinstances.managers.DungeonManager;
 import fr.eminiumgames.dungeonsinstances.managers.PartyManager;
 
@@ -25,7 +26,8 @@ public class DungeonInstances extends JavaPlugin {
         // Register commands and events here
         getCommand("dungeon").setExecutor(new DungeonCommand());
         getCommand("dungeon").setTabCompleter(new DungeonTabCompleter());
-        getCommand("party").setExecutor(new PartyCommand());
+        getCommand("dparty").setExecutor(new PartyCommand());
+        getCommand("dparty").setTabCompleter(new PartyTabCompleter());
     }
 
     @Override

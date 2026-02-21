@@ -1,11 +1,12 @@
 package fr.eminiumgames.dungeonsinstances.commands;
 
-import fr.eminiumgames.dungeonsinstances.DungeonInstances;
-import fr.eminiumgames.dungeonsinstances.managers.PartyManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import fr.eminiumgames.dungeonsinstances.DungeonInstances;
+import fr.eminiumgames.dungeonsinstances.managers.PartyManager;
 
 public class PartyCommand implements CommandExecutor {
 
@@ -20,7 +21,7 @@ public class PartyCommand implements CommandExecutor {
         PartyManager partyManager = DungeonInstances.getInstance().getPartyManager();
 
         if (args.length < 1) {
-            player.sendMessage("Usage: /party <create|join|leave|list> [party-name]");
+            player.sendMessage("Usage: /dparty <create|join|leave|list> [party-name]");
             return true;
         }
 
@@ -29,7 +30,7 @@ public class PartyCommand implements CommandExecutor {
         switch (subCommand) {
             case "create":
                 if (args.length < 2) {
-                    player.sendMessage("Usage: /party create <party-name>");
+                    player.sendMessage("Usage: /dparty create <party-name>");
                     return true;
                 }
                 String partyName = args[1];
@@ -42,7 +43,7 @@ public class PartyCommand implements CommandExecutor {
 
             case "join":
                 if (args.length < 2) {
-                    player.sendMessage("Usage: /party join <party-name>");
+                    player.sendMessage("Usage: /dparty join <party-name>");
                     return true;
                 }
                 partyName = args[1];
@@ -69,7 +70,7 @@ public class PartyCommand implements CommandExecutor {
                 break;
 
             default:
-                player.sendMessage("Unknown subcommand. Usage: /party <create|join|leave|list> [party-name]");
+                player.sendMessage("Unknown subcommand. Usage: /dparty <create|join|leave|list> [party-name]");
                 break;
         }
 
