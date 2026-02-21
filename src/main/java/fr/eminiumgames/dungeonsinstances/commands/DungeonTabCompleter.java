@@ -11,6 +11,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
+import fr.eminiumgames.dungeonsinstances.DungeonInstances;
+
 public class DungeonTabCompleter implements TabCompleter {
 
     private static final String DUNGEON_TEMPLATES_FOLDER = "templates-dungeons";
@@ -22,6 +24,8 @@ public class DungeonTabCompleter implements TabCompleter {
         if (args.length == 1) {
             suggestions.add("instance");
             suggestions.add("leave");
+            suggestions.add("list");
+            suggestions.add("party");
             if (sender.hasPermission("dungeon.admin")) {
                 suggestions.add("admin");
             }
@@ -71,6 +75,25 @@ public class DungeonTabCompleter implements TabCompleter {
                 .filter(name -> name.startsWith("editmode_"))
                 .collect(Collectors.toList());
             return worldNames;
+        }
+
+        if (args.length == 2 && args[0].equalsIgnoreCase("party")) {
+            suggestions.add("create");
+            suggestions.add("join");
+            suggestions.add("leave");
+            suggestions.add("list");
+            return suggestions.stream()
+                .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
+                .collect(Collectors.toList());
+        }
+
+        if (args.length == 3 && args[0].equalsIgnoreCase("party") && args[1].equalsIgnoreCase("join")) {
+            for (String name : DungeonInstances.getInstance().getPartyManager().listPartyNames()) {
+                suggestions.add(name);
+            }
+            return suggestions.stream()
+                .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
+                .collect(Collectors.toList());
         }
 
         return suggestions;

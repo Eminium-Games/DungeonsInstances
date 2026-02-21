@@ -8,8 +8,5 @@ authors:
   - fox3000foxy
 commands:
   dungeon:
-    description: Commande principale pour gérer les donjons.
+    description: Commande principale pour gérer les donjons et les groupes.
     usage: /dungeon <sous-commande>
-  dparty:
-    description: Commande pour gérer les groupes.
-    usage: /dparty <sous-commande>

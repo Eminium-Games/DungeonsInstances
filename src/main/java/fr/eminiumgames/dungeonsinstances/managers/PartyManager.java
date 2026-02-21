@@ -85,6 +85,10 @@ public class PartyManager {
         return partyList;
     }
 
+    public List<String> listPartyNames() {
+        return new ArrayList<>(parties.keySet());
+    }
+
     public void broadcastToParty(Party party, String message) {
         for (UUID memberId : party.getMembers()) {
             Player member = Bukkit.getPlayer(memberId);

@@ -259,6 +259,69 @@ public class DungeonCommand implements CommandExecutor {
             return true;
         }
 
+        if (subCommand.equals("party")) {
+            PartyManager partyManager = DungeonInstances.getInstance().getPartyManager();
+
+            if (args.length < 2) {
+                player.sendMessage(PARTY_PREFIX + ChatColor.YELLOW + "Utilisation: /dungeon party <create|join|leave|list> [nom-du-groupe]");
+                return true;
+            }
+
+            String partySubCommand = args[1].toLowerCase();
+
+            switch (partySubCommand) {
+                case "create":
+                    if (args.length < 3) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.YELLOW + "Utilisation: /dungeon party create <nom-du-groupe>");
+                        return true;
+                    }
+                    String partyName = args[2];
+                    if (!partyName.matches("^[a-zA-Z0-9_-]+$")) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Nom de groupe invalide. Seuls les lettres, chiffres, tirets et underscores sont autorisés.");
+                        return true;
+                    }
+                    if (partyManager.createParty(partyName, player)) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Le groupe " + ChatColor.LIGHT_PURPLE + partyName + ChatColor.GREEN + " a été créé avec succès !");
+                    } else {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Un groupe avec ce nom existe déjà.");
+                    }
+                    break;
+
+                case "join":
+                    if (args.length < 3) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.YELLOW + "Utilisation: /dungeon party join <nom-du-groupe>");
+                        return true;
+                    }
+                    partyName = args[2];
+                    if (partyManager.joinParty(partyName, player)) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Vous avez rejoint le groupe " + ChatColor.LIGHT_PURPLE + partyName + ChatColor.GREEN + " !");
+                    } else {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Impossible de rejoindre le groupe. Il n'existe pas ou vous êtes déjà dans un groupe.");
+                    }
+                    break;
+
+                case "leave":
+                    if (partyManager.leaveParty(player)) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Vous avez quitté votre groupe.");
+                    } else {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Vous n'êtes dans aucun groupe.");
+                    }
+                    break;
+
+                case "list":
+                    player.sendMessage(PARTY_PREFIX + ChatColor.YELLOW + "Groupes actifs :");
+                    for (String partyInfo : partyManager.listParties()) {
+                        player.sendMessage(" " + ChatColor.GRAY + "▪ " + partyInfo);
+                    }
+                    break;
+
+                default:
+                    player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Sous-commande inconnue. " + ChatColor.YELLOW + "Utilisation: /dungeon party <create|join|leave|list> [nom-du-groupe]");
+                    break;
+            }
+            return true;
+        }
+
         if (subCommand.equals("admin") && args.length > 1 && args[1].equalsIgnoreCase("purge")) {
             File worldContainer = Bukkit.getWorldContainer();
             File[] instanceFolders = worldContainer.listFiles((file) -> file.isDirectory() && file.getName().startsWith("instance_"));
@@ -342,7 +405,7 @@ public class DungeonCommand implements CommandExecutor {
         }
 
         // Handle unknown subcommands
-        if (!subCommand.equals("admin") && !subCommand.equals("instance") && !subCommand.equals("list") && !subCommand.equals("leave")) {
+        if (!subCommand.equals("admin") && !subCommand.equals("instance") && !subCommand.equals("list") && !subCommand.equals("leave") && !subCommand.equals("party")) {
             player.sendMessage("Unknown subcommand. Available subcommands:");
             player.sendMessage("/dungeon instance <dungeon-name> - Create a dungeon instance");
             return true;
