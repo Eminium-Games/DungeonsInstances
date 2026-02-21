@@ -28,6 +28,8 @@ public class PartyManager {
 
     private final Map<String, Party> parties = new HashMap<>();
     private final Map<UUID, String> pendingInvites = new HashMap<>(); // invitedPlayer -> partyName
+    // track player's previous world before teleporting them into an instance
+    private final Map<UUID, String> previousWorlds = new HashMap<>();
     private final File partyDataFile = new File("plugins/DungeonInstances/partyData.json");
     private final Gson gson = new Gson();
 
@@ -102,6 +104,8 @@ public class PartyManager {
         if (party == null) {
             return false;
         }
+        // Ensure player leaves any existing party before joining (do not teleport back when switching)
+        leaveParty(player, false);
         party.addMember(player);
         broadcastToParty(party, PREFIX + ChatColor.AQUA + player.getName() + ChatColor.GREEN + " a rejoint le groupe !");
         saveParties();
@@ -125,12 +129,34 @@ public class PartyManager {
     }
 
     public boolean leaveParty(Player player) {
+        return leaveParty(player, true);
+    }
+
+    /**
+     * Leave a party. If teleportBack is true and the player is currently in an instance world,
+     * they will be teleported back to their previous world (or main spawn if unknown).
+     */
+    public boolean leaveParty(Player player, boolean teleportBack) {
         Party party = getPartyByPlayer(player);
         if (party == null) {
             return false;
         }
         party.removeMember(player);
         broadcastToParty(party, PREFIX + ChatColor.AQUA + player.getName() + ChatColor.RED + " a quitté le groupe.");
+
+        // If requested, teleport the player back when leaving while in an instance
+        if (teleportBack) {
+            if (player.getWorld() != null && player.getWorld().getName().startsWith("instance_")) {
+                String prev = previousWorlds.remove(player.getUniqueId());
+                if (prev != null && Bukkit.getWorld(prev) != null) {
+                    player.teleport(Bukkit.getWorld(prev).getSpawnLocation());
+                } else {
+                    player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
+                }
+                player.sendMessage(PREFIX + ChatColor.GREEN + "Téléporté vers votre monde précédent.");
+            }
+        }
+
         if (party.isEmpty()) {
             parties.remove(party.getName());
         }
@@ -166,6 +192,51 @@ public class PartyManager {
                 member.sendMessage(message);
             }
         }
+    }
+
+    /**
+     * Kick a member from a specific party.
+     * Returns true if member was removed.
+     */
+    public boolean kickMember(Party party, UUID memberId) {
+        if (party == null || !party.getMembers().contains(memberId)) return false;
+        party.getMembers().remove(memberId);
+
+        // Notify the kicked player if online
+        Player kicked = Bukkit.getPlayer(memberId);
+        String kickedName = kicked != null ? kicked.getName() : Bukkit.getOfflinePlayer(memberId).getName();
+
+        // If the kicked player is in an instance, teleport them back to previous world
+        if (kicked != null && kicked.isOnline()) {
+            if (kicked.getWorld() != null && kicked.getWorld().getName().startsWith("instance_")) {
+                String prev = previousWorlds.remove(memberId);
+                if (prev != null && Bukkit.getWorld(prev) != null) {
+                    kicked.teleport(Bukkit.getWorld(prev).getSpawnLocation());
+                } else {
+                    kicked.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
+                }
+                kicked.sendMessage(PREFIX + ChatColor.RED + "Vous avez été expulsé du groupe et téléporté vers votre monde précédent.");
+            } else {
+                kicked.sendMessage(PREFIX + ChatColor.RED + "Vous avez été expulsé du groupe " + ChatColor.LIGHT_PURPLE + party.getName());
+            }
+        }
+
+        broadcastToParty(party, PREFIX + ChatColor.AQUA + kickedName + ChatColor.YELLOW + " a été expulsé du groupe.");
+
+        if (party.isEmpty()) {
+            parties.remove(party.getName());
+        }
+        saveParties();
+        return true;
+    }
+
+    public void setPreviousWorld(UUID playerId, String worldName) {
+        if (playerId == null || worldName == null) return;
+        previousWorlds.put(playerId, worldName);
+    }
+
+    public String popPreviousWorld(UUID playerId) {
+        return previousWorlds.remove(playerId);
     }
 
     private void saveParties() {

@@ -20,6 +20,7 @@ public class DungeonCommand implements CommandExecutor {
     private static final String PREFIX = ChatColor.DARK_PURPLE + "[Donjon] " + ChatColor.RESET;
     private static final String PARTY_PREFIX = PartyManager.PREFIX;
 
+    @SuppressWarnings("deprecation")
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
@@ -199,6 +200,8 @@ public class DungeonCommand implements CommandExecutor {
                     for (UUID memberId : party.getMembers()) {
                         Player member = Bukkit.getPlayer(memberId);
                         if (member != null && member.isOnline()) {
+                            // store previous world before teleporting into the instance
+                            DungeonInstances.getInstance().getPartyManager().setPreviousWorld(member.getUniqueId(), member.getWorld().getName());
                             member.teleport(spawnLocation);
                             member.sendMessage(PREFIX + ChatColor.GREEN + "Vous avez été téléporté dans le donjon : " + ChatColor.LIGHT_PURPLE + dungeonName);
                         }
@@ -271,15 +274,22 @@ public class DungeonCommand implements CommandExecutor {
 
             switch (partySubCommand) {
                 case "create":
+                    String partyName;
                     if (args.length < 3) {
-                        player.sendMessage(PARTY_PREFIX + ChatColor.YELLOW + "Utilisation: /dungeon party create <nom-du-groupe>");
-                        return true;
+                        // default party name to creator's player name
+                        partyName = player.getName();
+                    } else {
+                        partyName = args[2];
                     }
-                    String partyName = args[2];
+
+                    // sanitize: replace spaces with underscores
+                    partyName = partyName.replaceAll("\\s+", "_");
+
                     if (!partyName.matches("^[a-zA-Z0-9_-]+$")) {
                         player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Nom de groupe invalide. Seuls les lettres, chiffres, tirets et underscores sont autorisés.");
                         return true;
                     }
+
                     if (partyManager.createParty(partyName, player)) {
                         player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Le groupe " + ChatColor.LIGHT_PURPLE + partyName + ChatColor.GREEN + " a été créé avec succès !");
                     } else {
@@ -332,7 +342,7 @@ public class DungeonCommand implements CommandExecutor {
                     break;
 
                 case "leave":
-                    if (partyManager.leaveParty(player)) {
+                    if (partyManager.leaveParty(player, true)) {
                         player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Vous avez quitté votre groupe.");
                     } else {
                         player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Vous n'êtes dans aucun groupe.");
@@ -365,6 +375,43 @@ public class DungeonCommand implements CommandExecutor {
                         }
                         String status = (member != null && member.isOnline()) ? ChatColor.GREEN + "●" : ChatColor.RED + "●";
                         player.sendMessage(" " + status + " " + ChatColor.AQUA + memberName + tags.toString());
+                    }
+                    break;
+
+                case "kick":
+                    if (args.length < 3) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.YELLOW + "Utilisation: /dungeon party kick <joueur>");
+                        return true;
+                    }
+                    String targetName = args[2];
+                    PartyManager.Party leaderParty = partyManager.getPartyByPlayer(player);
+                    if (leaderParty == null) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Vous n'êtes dans aucun groupe.");
+                        return true;
+                    }
+                    if (!leaderParty.getLeader().equals(player.getUniqueId())) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Seul le chef du groupe peut expulser un membre.");
+                        return true;
+                    }
+
+                    // Find UUID of the target (online or offline)
+                    UUID targetId = null;
+                    Player targetPlayer = Bukkit.getPlayerExact(targetName);
+                    if (targetPlayer != null) {
+                        targetId = targetPlayer.getUniqueId();
+                    } else {
+                        targetId = Bukkit.getOfflinePlayer(targetName).getUniqueId();
+                    }
+
+                    if (targetId == null || !leaderParty.getMembers().contains(targetId)) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Le joueur " + ChatColor.AQUA + targetName + ChatColor.RED + " n'est pas dans votre groupe.");
+                        return true;
+                    }
+
+                    if (partyManager.kickMember(leaderParty, targetId)) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Le joueur " + ChatColor.AQUA + targetName + ChatColor.GREEN + " a été expulsé du groupe.");
+                    } else {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Impossible d'expulser le joueur.");
                     }
                     break;
 
