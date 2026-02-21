@@ -10,3 +10,7 @@ commands:
   dungeon:
     description: Commande principale pour gérer les donjons et les groupes.
     usage: /dungeon <sous-commande>
+permissions:
+  dungeon.admin:
+    description: Permission d'utiliser les commandes d'administration des donjons.
+    default: op

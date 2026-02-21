@@ -415,6 +415,23 @@ public class DungeonCommand implements CommandExecutor {
                     }
                     break;
 
+                case "disband":
+                    PartyManager.Party p = partyManager.getPartyByPlayer(player);
+                    if (p == null) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Vous n'êtes dans aucun groupe.");
+                        return true;
+                    }
+                    if (!p.getLeader().equals(player.getUniqueId())) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Seul le chef du groupe peut dissoudre le groupe.");
+                        return true;
+                    }
+                    if (partyManager.disbandParty(p)) {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.GREEN + "Le groupe " + ChatColor.LIGHT_PURPLE + p.getName() + ChatColor.GREEN + " a été dissous.");
+                    } else {
+                        player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Impossible de dissoudre le groupe.");
+                    }
+                    break;
+
                 default:
                     player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Sous-commande inconnue. " + ChatColor.YELLOW + "Utilisation: /dungeon party <create|invite|accept|decline|leave|list|members>");
                     break;

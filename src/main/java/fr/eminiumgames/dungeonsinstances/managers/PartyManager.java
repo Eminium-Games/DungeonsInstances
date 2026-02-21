@@ -230,6 +230,41 @@ public class PartyManager {
         return true;
     }
 
+    /**
+     * Disband the given party: notify members, teleport back if needed and remove all invites.
+     */
+    public boolean disbandParty(Party party) {
+        if (party == null) return false;
+
+            // Notify and handle members
+        for (UUID memberId : party.getMembers()) {
+            Player member = Bukkit.getPlayer(memberId);
+            // String memberName = member != null ? member.getName() : Bukkit.getOfflinePlayer(memberId).getName();
+            if (member != null && member.isOnline()) {
+                // if in instance, teleport back
+                if (member.getWorld() != null && member.getWorld().getName().startsWith("instance_")) {
+                    String prev = previousWorlds.remove(memberId);
+                    if (prev != null && Bukkit.getWorld(prev) != null) {
+                        member.teleport(Bukkit.getWorld(prev).getSpawnLocation());
+                    } else {
+                        member.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
+                    }
+                    member.sendMessage(PREFIX + ChatColor.RED + "Le groupe a été dissous et vous avez été téléporté vers votre monde précédent.");
+                } else {
+                    member.sendMessage(PREFIX + ChatColor.RED + "Le groupe " + ChatColor.LIGHT_PURPLE + party.getName() + ChatColor.RED + " a été dissous.");
+                }
+            }
+        }
+
+        // Remove any pending invites for this party
+        pendingInvites.entrySet().removeIf(e -> e.getValue().equals(party.getName()));
+
+        // Remove party
+        parties.remove(party.getName());
+        saveParties();
+        return true;
+    }
+
     public void setPreviousWorld(UUID playerId, String worldName) {
         if (playerId == null || worldName == null) return;
         previousWorlds.put(playerId, worldName);

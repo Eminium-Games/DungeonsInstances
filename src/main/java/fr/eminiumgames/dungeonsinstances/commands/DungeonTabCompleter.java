@@ -84,6 +84,7 @@ public class DungeonTabCompleter implements TabCompleter {
             suggestions.add("leave");
             suggestions.add("list");
             suggestions.add("kick");
+            suggestions.add("disband");
             suggestions.add("members");
             return suggestions.stream()
                 .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))

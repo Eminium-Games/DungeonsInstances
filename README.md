@@ -61,11 +61,14 @@ Toutes les commandes sont sous `/dungeon`.
   - `setspawn <template>` : enregistre la position actuelle du joueur comme spawn pour ce template (sauvegardé dans `spawnPoints.json`).
 
 - `/dungeon party <sub>`
-  - `create <name>` : crée un nouveau party.
+- `/dungeon party <sub>`
+  - `create <name?>` : crée un nouveau party. Si aucun nom n'est fourni, le plugin utilise le pseudo du créateur (les espaces sont remplacés par des underscores). Les noms doivent être uniques — la création échouera si le nom existe déjà.
   - `invite <player>` : invite un joueur (envoi un message cliquable `[Accepter]`/`[Refuser]`).
-  - `accept` : accepte la dernière invitation.
+  - `accept` : accepte la dernière invitation. L'accept provoque automatiquement la sortie du joueur de toute autre party existante avant de rejoindre la nouvelle.
   - `decline` : décline la dernière invitation.
-  - `leave` : quitte le party.
+  - `leave` : quitte le party. Si le joueur se trouve dans une instance (`instance_...`), il sera téléporté automatiquement vers son monde précédent (si connu) ou vers le spawn principal.
+  - `kick <player>` : (leader uniquement) expulse un membre du groupe. Si le membre expulsé se trouve dans une instance, il est téléporté vers son monde précédent.
+  - `disband` : (leader uniquement) dissout le groupe — notifie tous les membres, supprime les invitations en attente et téléporte les membres présents en instance vers leur monde précédent.
   - `list` : liste les parties / membres.
   - `members` : affiche les membres du party (Leader/Vous, online/offline).
 
