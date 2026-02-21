@@ -1,6 +1,8 @@
 package fr.eminiumgames.dungeonsinstances.managers;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
@@ -10,13 +12,90 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 public class DungeonManager {
 
     private final Map<String, World> dungeonCache = new HashMap<>();
     private final File dungeonTemplatesFolder = new File("templates-dungeons");
+    private final Map<String, SpawnPoint> spawnPoints = new HashMap<>();
+    private final File spawnDataFile = new File("plugins/DungeonInstances/spawnPoints.json");
+    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    public DungeonManager() {
+        loadSpawnPoints();
+    }
+
+    /**
+     * Represents a spawn point for a dungeon template.
+     */
+    public static class SpawnPoint {
+        public double x, y, z;
+        public float yaw, pitch;
+
+        public SpawnPoint() {}
+
+        public SpawnPoint(double x, double y, double z, float yaw, float pitch) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.yaw = yaw;
+            this.pitch = pitch;
+        }
+
+        public Location toLocation(World world) {
+            return new Location(world, x, y, z, yaw, pitch);
+        }
+    }
+
+    public void setSpawnPoint(String templateName, Location location) {
+        spawnPoints.put(templateName, new SpawnPoint(
+            location.getX(), location.getY(), location.getZ(),
+            location.getYaw(), location.getPitch()
+        ));
+        saveSpawnPoints();
+    }
+
+    public Location getSpawnLocation(String templateName, World world) {
+        SpawnPoint sp = spawnPoints.get(templateName);
+        if (sp != null) {
+            return sp.toLocation(world);
+        }
+        return world.getSpawnLocation();
+    }
+
+    private void saveSpawnPoints() {
+        try {
+            if (!spawnDataFile.getParentFile().exists()) {
+                spawnDataFile.getParentFile().mkdirs();
+            }
+            try (FileWriter writer = new FileWriter(spawnDataFile)) {
+                gson.toJson(spawnPoints, writer);
+            }
+        } catch (IOException e) {
+            Bukkit.getLogger().severe("Failed to save spawn points: " + e.getMessage());
+        }
+    }
+
+    private void loadSpawnPoints() {
+        if (!spawnDataFile.exists()) {
+            return;
+        }
+        try (FileReader reader = new FileReader(spawnDataFile)) {
+            Map<String, SpawnPoint> loaded = gson.fromJson(reader, new TypeToken<Map<String, SpawnPoint>>() {}.getType());
+            if (loaded != null) {
+                spawnPoints.putAll(loaded);
+            }
+        } catch (IOException e) {
+            Bukkit.getLogger().severe("Failed to load spawn points: " + e.getMessage());
+        }
+    }
     public void loadDungeonTemplate(String templateName) {
         File templateFolder = new File(dungeonTemplatesFolder, templateName);
         Bukkit.getLogger().info("Attempting to load template: " + templateName);

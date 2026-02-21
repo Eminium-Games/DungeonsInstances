@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import com.google.gson.Gson;
@@ -27,6 +28,8 @@ public class PartyManager {
     public PartyManager() {
         loadParties();
     }
+
+    public static final String PREFIX = ChatColor.GOLD + "[Party] " + ChatColor.RESET;
 
     public boolean createParty(String partyName, Player leader) {
         if (parties.containsKey(partyName)) {
@@ -45,6 +48,7 @@ public class PartyManager {
         }
         boolean added = party.addMember(player);
         if (added) {
+            broadcastToParty(party, PREFIX + ChatColor.AQUA + player.getName() + ChatColor.GREEN + " a rejoint le groupe !");
             saveParties();
         }
         return added;
@@ -56,6 +60,7 @@ public class PartyManager {
             return false; // Player is not in a party
         }
         party.removeMember(player);
+        broadcastToParty(party, PREFIX + ChatColor.AQUA + player.getName() + ChatColor.RED + " a quitté le groupe.");
         if (party.isEmpty()) {
             parties.remove(party.getName());
         }
@@ -75,9 +80,18 @@ public class PartyManager {
     public List<String> listParties() {
         List<String> partyList = new ArrayList<>();
         for (Party party : parties.values()) {
-            partyList.add(party.getName() + " (" + party.getMemberCount() + " players)");
+            partyList.add(ChatColor.LIGHT_PURPLE + party.getName() + ChatColor.GRAY + " (" + party.getMemberCount() + " joueurs)");
         }
         return partyList;
+    }
+
+    public void broadcastToParty(Party party, String message) {
+        for (UUID memberId : party.getMembers()) {
+            Player member = Bukkit.getPlayer(memberId);
+            if (member != null && member.isOnline()) {
+                member.sendMessage(message);
+            }
+        }
     }
 
     private void saveParties() {

@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -14,6 +16,9 @@ import fr.eminiumgames.dungeonsinstances.DungeonInstances;
 import fr.eminiumgames.dungeonsinstances.managers.PartyManager;
 
 public class DungeonCommand implements CommandExecutor {
+
+    private static final String PREFIX = ChatColor.DARK_PURPLE + "[Donjon] " + ChatColor.RESET;
+    private static final String PARTY_PREFIX = PartyManager.PREFIX;
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -140,8 +145,24 @@ public class DungeonCommand implements CommandExecutor {
                     }
                     break;
 
+                case "setspawn":
+                    World currentWorld = player.getWorld();
+                    String currentWorldName = currentWorld.getName();
+
+                    if (!currentWorldName.startsWith("editmode_")) {
+                        player.sendMessage(PREFIX + ChatColor.RED + "Vous devez être dans un monde en mode édition (editmode_) pour définir le spawn.");
+                        return true;
+                    }
+
+                    String spawnTemplateName = currentWorldName.replace("editmode_", "");
+                    Location spawnLoc = player.getLocation();
+                    DungeonInstances.getInstance().getDungeonManager().setSpawnPoint(spawnTemplateName, spawnLoc);
+                    player.sendMessage(PREFIX + ChatColor.GREEN + "Spawn du donjon " + ChatColor.LIGHT_PURPLE + spawnTemplateName + ChatColor.GREEN + " défini à votre position !");
+                    player.sendMessage(PREFIX + ChatColor.GRAY + "X: " + String.format("%.1f", spawnLoc.getX()) + " Y: " + String.format("%.1f", spawnLoc.getY()) + " Z: " + String.format("%.1f", spawnLoc.getZ()));
+                    break;
+
                 default:
-                    player.sendMessage("Unknown admin subcommand. Available subcommands: edit, save, purge");
+                    player.sendMessage("Unknown admin subcommand. Available subcommands: edit, save, purge, setspawn");
                     break;
             }
             return true;
@@ -149,7 +170,7 @@ public class DungeonCommand implements CommandExecutor {
 
         if (subCommand.equals("instance")) {
             if (args.length < 2) {
-                player.sendMessage("Usage: /dungeon instance <dungeon-name>");
+                player.sendMessage(PREFIX + ChatColor.YELLOW + "Utilisation: /dungeon instance <nom-du-donjon>");
                 return true;
             }
 
@@ -158,27 +179,33 @@ public class DungeonCommand implements CommandExecutor {
             PartyManager.Party party = partyManager.getPartyByPlayer(player);
 
             if (party == null) {
-                player.sendMessage("You are not in a party.");
+                player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Vous n'êtes dans aucun groupe.");
                 return true;
             }
 
             if (!party.getLeader().equals(player.getUniqueId())) {
-                player.sendMessage("Only the party leader can start a dungeon instance.");
+                player.sendMessage(PARTY_PREFIX + ChatColor.RED + "Seul le chef du groupe peut lancer une instance de donjon.");
                 return true;
             }
 
             World instance = DungeonInstances.getInstance().getDungeonManager().createDungeonInstance(dungeonName, "instance_" + dungeonName + "_" + UUID.randomUUID());
             if (instance != null) {
-                for (UUID memberId : party.getMembers()) {
-                    Player member = Bukkit.getPlayer(memberId);
-                    if (member != null && member.isOnline()) {
-                        member.teleport(instance.getSpawnLocation());
-                        member.sendMessage("You have been teleported to the dungeon instance: " + dungeonName);
+                partyManager.broadcastToParty(party, PARTY_PREFIX + ChatColor.GREEN + "Le donjon " + ChatColor.LIGHT_PURPLE + dungeonName + ChatColor.GREEN + " a été lancé par " + ChatColor.AQUA + player.getName() + ChatColor.GREEN + " !");
+                partyManager.broadcastToParty(party, PARTY_PREFIX + ChatColor.YELLOW + "Téléportation dans 10 secondes...");
+
+                final World dungeonWorld = instance;
+                final Location spawnLocation = DungeonInstances.getInstance().getDungeonManager().getSpawnLocation(dungeonName, dungeonWorld);
+                Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
+                    for (UUID memberId : party.getMembers()) {
+                        Player member = Bukkit.getPlayer(memberId);
+                        if (member != null && member.isOnline()) {
+                            member.teleport(spawnLocation);
+                            member.sendMessage(PREFIX + ChatColor.GREEN + "Vous avez été téléporté dans le donjon : " + ChatColor.LIGHT_PURPLE + dungeonName);
+                        }
                     }
-                }
-                player.sendMessage("Dungeon instance created and party members teleported.");
+                }, 200L); // 200 ticks = 10 secondes
             } else {
-                player.sendMessage("Failed to create dungeon instance.");
+                player.sendMessage(PREFIX + ChatColor.RED + "Échec de la création de l'instance de donjon.");
             }
 
             return true;
@@ -188,19 +215,19 @@ public class DungeonCommand implements CommandExecutor {
             File templatesFolder = new File(DungeonInstances.getInstance().getDataFolder().getParentFile().getParentFile(), "templates-dungeons");
 
             if (!templatesFolder.exists() || !templatesFolder.isDirectory()) {
-                player.sendMessage("The templates-dungeons folder does not exist or is not a directory.");
+                player.sendMessage(PREFIX + ChatColor.RED + "Le dossier templates-dungeons n'existe pas.");
                 return true;
             }
 
             File[] dungeonFiles = templatesFolder.listFiles(File::isDirectory);
             if (dungeonFiles == null || dungeonFiles.length == 0) {
-                player.sendMessage("No dungeon templates found in the templates-dungeons folder.");
+                player.sendMessage(PREFIX + ChatColor.YELLOW + "Aucun template de donjon trouvé.");
                 return true;
             }
 
-            player.sendMessage("Available dungeon templates:");
+            player.sendMessage(PREFIX + ChatColor.YELLOW + "Donjons disponibles :");
             for (File dungeon : dungeonFiles) {
-                player.sendMessage("- " + dungeon.getName());
+                player.sendMessage(" " + ChatColor.GRAY + "▪ " + ChatColor.LIGHT_PURPLE + dungeon.getName());
             }
 
             return true;
@@ -209,13 +236,20 @@ public class DungeonCommand implements CommandExecutor {
         if (subCommand.equals("leave")) {
             World playerWorld = player.getWorld();
             if (!playerWorld.getName().startsWith("instance_")) {
-                player.sendMessage("You are not in a dungeon instance.");
+                player.sendMessage(PREFIX + ChatColor.RED + "Vous n'êtes pas dans une instance de donjon.");
                 return true;
+            }
+
+            // Broadcast to party that player is leaving
+            PartyManager partyManager = DungeonInstances.getInstance().getPartyManager();
+            PartyManager.Party currentParty = partyManager.getPartyByPlayer(player);
+            if (currentParty != null) {
+                partyManager.broadcastToParty(currentParty, PARTY_PREFIX + ChatColor.AQUA + player.getName() + ChatColor.YELLOW + " a quitté le donjon.");
             }
 
             // Teleport player to spawn or a safe location
             player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
-            player.sendMessage("You have left the dungeon instance.");
+            player.sendMessage(PREFIX + ChatColor.GREEN + "Vous avez quitté l'instance de donjon.");
 
             // Check if the instance is empty and unload it
             if (playerWorld.getPlayers().isEmpty()) {

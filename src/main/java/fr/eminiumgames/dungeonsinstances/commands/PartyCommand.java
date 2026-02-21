@@ -1,5 +1,6 @@
 package fr.eminiumgames.dungeonsinstances.commands;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -10,10 +11,12 @@ import fr.eminiumgames.dungeonsinstances.managers.PartyManager;
 
 public class PartyCommand implements CommandExecutor {
 
+    private static final String PREFIX = PartyManager.PREFIX;
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("Only players can use this command.");
+            sender.sendMessage(PREFIX + ChatColor.RED + "Seuls les joueurs peuvent utiliser cette commande.");
             return true;
         }
 
@@ -21,7 +24,7 @@ public class PartyCommand implements CommandExecutor {
         PartyManager partyManager = DungeonInstances.getInstance().getPartyManager();
 
         if (args.length < 1) {
-            player.sendMessage("Usage: /dparty <create|join|leave|list> [party-name]");
+            player.sendMessage(PREFIX + ChatColor.YELLOW + "Utilisation: /dparty <create|join|leave|list> [nom-du-groupe]");
             return true;
         }
 
@@ -30,51 +33,51 @@ public class PartyCommand implements CommandExecutor {
         switch (subCommand) {
             case "create":
                 if (args.length < 2) {
-                    player.sendMessage("Usage: /dparty create <party-name>");
+                    player.sendMessage(PREFIX + ChatColor.YELLOW + "Utilisation: /dparty create <nom-du-groupe>");
                     return true;
                 }
                 String partyName = args[1];
                 if (!partyName.matches("^[a-zA-Z0-9_-]+$")) {
-                    player.sendMessage("Invalid party name. Only letters, numbers, underscores, and hyphens are allowed.");
+                    player.sendMessage(PREFIX + ChatColor.RED + "Nom de groupe invalide. Seuls les lettres, chiffres, tirets et underscores sont autorisés.");
                     return true;
                 }
                 if (partyManager.createParty(partyName, player)) {
-                    player.sendMessage("Party '" + partyName + "' created successfully.");
+                    player.sendMessage(PREFIX + ChatColor.GREEN + "Le groupe " + ChatColor.LIGHT_PURPLE + partyName + ChatColor.GREEN + " a été créé avec succès !");
                 } else {
-                    player.sendMessage("A party with that name already exists.");
+                    player.sendMessage(PREFIX + ChatColor.RED + "Un groupe avec ce nom existe déjà.");
                 }
                 break;
 
             case "join":
                 if (args.length < 2) {
-                    player.sendMessage("Usage: /dparty join <party-name>");
+                    player.sendMessage(PREFIX + ChatColor.YELLOW + "Utilisation: /dparty join <nom-du-groupe>");
                     return true;
                 }
                 partyName = args[1];
                 if (partyManager.joinParty(partyName, player)) {
-                    player.sendMessage("You joined the party '" + partyName + "'.");
+                    player.sendMessage(PREFIX + ChatColor.GREEN + "Vous avez rejoint le groupe " + ChatColor.LIGHT_PURPLE + partyName + ChatColor.GREEN + " !");
                 } else {
-                    player.sendMessage("Failed to join the party. It may not exist or you are already in a party.");
+                    player.sendMessage(PREFIX + ChatColor.RED + "Impossible de rejoindre le groupe. Il n'existe pas ou vous êtes déjà dans un groupe.");
                 }
                 break;
 
             case "leave":
                 if (partyManager.leaveParty(player)) {
-                    player.sendMessage("You left your party.");
+                    player.sendMessage(PREFIX + ChatColor.GREEN + "Vous avez quitté votre groupe.");
                 } else {
-                    player.sendMessage("You are not in a party.");
+                    player.sendMessage(PREFIX + ChatColor.RED + "Vous n'êtes dans aucun groupe.");
                 }
                 break;
 
             case "list":
-                player.sendMessage("Active parties:");
+                player.sendMessage(PREFIX + ChatColor.YELLOW + "Groupes actifs :");
                 for (String partyInfo : partyManager.listParties()) {
-                    player.sendMessage(partyInfo);
+                    player.sendMessage(" " + ChatColor.GRAY + "▪ " + partyInfo);
                 }
                 break;
 
             default:
-                player.sendMessage("Unknown subcommand. Usage: /dparty <create|join|leave|list> [party-name]");
+                player.sendMessage(PREFIX + ChatColor.RED + "Sous-commande inconnue. " + ChatColor.YELLOW + "Utilisation: /dparty <create|join|leave|list> [nom-du-groupe]");
                 break;
         }
 
