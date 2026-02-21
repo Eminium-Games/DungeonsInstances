@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
@@ -12,6 +13,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import fr.eminiumgames.dungeonsinstances.commands.DungeonCommand;
 import fr.eminiumgames.dungeonsinstances.commands.DungeonTabCompleter;
 import fr.eminiumgames.dungeonsinstances.managers.DungeonManager;
+import fr.eminiumgames.dungeonsinstances.managers.DungeonScoreboardManager;
 import fr.eminiumgames.dungeonsinstances.managers.PartyManager;
 
 public class DungeonInstances extends JavaPlugin implements Listener {
@@ -19,12 +21,15 @@ public class DungeonInstances extends JavaPlugin implements Listener {
     private static DungeonInstances instance;
     private DungeonManager dungeonManager;
     private PartyManager partyManager;
+    private DungeonScoreboardManager scoreboardManager;
 
     @Override
     public void onEnable() {
         instance = this;
         dungeonManager = new DungeonManager();
         partyManager = new PartyManager();
+        scoreboardManager = new DungeonScoreboardManager();
+        scoreboardManager.start();
 
         getLogger().info("DungeonInstances plugin enabled.");
 
@@ -63,6 +68,9 @@ public class DungeonInstances extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
+        if (scoreboardManager != null) {
+            scoreboardManager.stop();
+        }
         getLogger().info("DungeonInstances plugin disabled.");
     }
 
@@ -76,6 +84,10 @@ public class DungeonInstances extends JavaPlugin implements Listener {
 
     public PartyManager getPartyManager() {
         return partyManager;
+    }
+
+    public DungeonScoreboardManager getScoreboardManager() {
+        return scoreboardManager;
     }
 
     private void deleteFolder(File folder) {
@@ -92,7 +104,14 @@ public class DungeonInstances extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+        Player player = event.getPlayer();
         World previousWorld = event.getFrom();
+        World currentWorld = player.getWorld();
+
+        // Remove scoreboard when leaving an instance world
+        if (previousWorld.getName().startsWith("instance_") && !currentWorld.getName().startsWith("instance_")) {
+            scoreboardManager.removeScoreboard(player);
+        }
 
         // Check if the previous world is an instance world
         if (previousWorld.getName().startsWith("instance_")) {
