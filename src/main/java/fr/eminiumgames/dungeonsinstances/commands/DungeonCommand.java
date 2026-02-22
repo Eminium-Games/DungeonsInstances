@@ -72,15 +72,22 @@ public class DungeonCommand implements CommandExecutor {
                         return true;
                     }
 
+                    // remember gamemode so we can restore it after teleport
+                    org.bukkit.GameMode previousGM = player.getGameMode();
+
                     editWorld = DungeonInstances.getInstance().getDungeonManager().createDungeonInstance(templateName,
                             editWorldName);
                     if (editWorld != null) {
                         // immediately disable AI for any mobs already present
                         DungeonInstances.getInstance().getDungeonManager().setAIForWorld(editWorld, false);
 
-                        // Teleport the player to the editing instance
-                        player.teleport(editWorld.getSpawnLocation());
+                        // Teleport the player to the editing instance spawn (use configured spawn if set)
+                        player.teleport(DungeonInstances.getInstance().getDungeonManager()
+                                .getSpawnLocation(templateName, editWorld));
                         player.sendMessage("You are now editing the dungeon template: " + templateName);
+
+                        // restore original gamemode rather than inheriting world default
+                        player.setGameMode(previousGM);
                     } else {
                         player.sendMessage(
                                 "Failed to create an editing instance for the dungeon template: " + templateName);
@@ -588,17 +595,5 @@ public class DungeonCommand implements CommandExecutor {
         }
 
         return true;
-    }
-
-    private static void deleteFolder(File folder) {
-        if (folder != null && folder.isDirectory()) {
-            File[] files = folder.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    deleteFolder(file);
-                }
-            }
-            folder.delete();
-        }
     }
 }
