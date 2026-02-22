@@ -47,7 +47,8 @@ public class DungeonCommand implements CommandExecutor {
 
             if (args.length < 2) {
                 player.sendMessage("Usage: /dungeon admin <subcommand>");
-                player.sendMessage("Available subcommands: edit, save, purge");
+                player.sendMessage("Available subcommands: edit, save, purge, setspawn");
+                player.sendMessage("/dungeon admin save <world> [radius] [y<value>] - persist mobs; optional radius limits to nearby creatures, y<value> ignores mobs below that Y");
                 return true;
             }
 
@@ -125,6 +126,15 @@ public class DungeonCommand implements CommandExecutor {
                     } else {
                         worldNameToSave = args[2];
                     }
+                    // extra arguments may be filters (radius or y<value>)
+                    if (args.length >= 4) {
+                        StringBuilder sb = new StringBuilder();
+                        for (int i = 3; i < args.length; i++) {
+                            if (i > 3) sb.append(",");
+                            sb.append(args[i]);
+                        }
+                        player.sendMessage(PREFIX + ChatColor.GRAY + "(filter arguments: " + sb.toString() + ")");
+                    }
 
                     Bukkit.getLogger().info("[Save Command] World name to save: " + worldNameToSave);
 
@@ -157,9 +167,45 @@ public class DungeonCommand implements CommandExecutor {
                     World w = Bukkit.getWorld(worldNameToSave);
                     if (w != null) {
                         w.save();
-                        // Save all mobs with their equipment, attributes, and NBT data
-                        DungeonInstances.getInstance().getDungeonManager().saveEditMobs(
-                                worldNameToSave.replace("editmode_", ""), w);
+                        // optional parameters may specify a radius and/or a Y cutoff
+                        double radius = -1.0;
+                        double minY = Double.NEGATIVE_INFINITY;
+                        for (int i = 3; i < args.length; i++) {
+                            String param = args[i];
+                            if (param.toLowerCase().startsWith("y")) {
+                                String num = param.substring(1);
+                                if (num.startsWith("=")) {
+                                    num = num.substring(1);
+                                }
+                                try {
+                                    minY = Double.parseDouble(num);
+                                } catch (NumberFormatException nfe) {
+                                    player.sendMessage(PREFIX + ChatColor.RED + "Invalid Y threshold. Use y<value>.");
+                                    return true;
+                                }
+                            } else {
+                                try {
+                                    radius = Double.parseDouble(param);
+                                } catch (NumberFormatException nfe) {
+                                    player.sendMessage(PREFIX + ChatColor.RED + "Invalid radius value. Provide a number.");
+                                    return true;
+                                }
+                            }
+                        }
+                        if (radius > 0) {
+                            player.sendMessage(PREFIX + ChatColor.GRAY + "Filtering mobs within " + radius + " blocks of you.");
+                        }
+                        if (minY != Double.NEGATIVE_INFINITY) {
+                            player.sendMessage(PREFIX + ChatColor.GRAY + "Ignoring mobs below Y=" + minY + ".");
+                        }
+                        if (radius > 0 || minY != Double.NEGATIVE_INFINITY) {
+                            DungeonInstances.getInstance().getDungeonManager().saveEditMobs(
+                                    worldNameToSave.replace("editmode_", ""), w,
+                                    player.getLocation(), radius, minY);
+                        } else {
+                            DungeonInstances.getInstance().getDungeonManager().saveEditMobs(
+                                    worldNameToSave.replace("editmode_", ""), w);
+                        }
                     }
 
                     // Copy the edited world back to the template folder

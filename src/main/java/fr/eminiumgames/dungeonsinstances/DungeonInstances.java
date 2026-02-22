@@ -72,6 +72,15 @@ public class DungeonInstances extends JavaPlugin implements Listener {
             getLogger().warning(
                     "The templates-dungeons folder does not exist or is not a directory. No dungeon templates were loaded.");
         }
+        // only inspect worlds that were explicitly created by this plugin.
+        // we do *not* iterate every world looking for mobs or chunks; the
+        // prefix check prevents accidental work on vanilla or unrelated worlds.
+        for (World w : Bukkit.getWorlds()) {
+            if (w.getName().startsWith("editmode_")) {
+                String tpl = w.getName().substring("editmode_".length());
+                dungeonManager.startAutoSave(w, tpl);
+            }
+        }
 
         // Purge all instance worlds on plugin reload
         File worldContainer = Bukkit.getWorldContainer();
@@ -143,15 +152,18 @@ public class DungeonInstances extends JavaPlugin implements Listener {
         }
     }
 
-    @EventHandler
-    public void onCreatureSpawn(org.bukkit.event.entity.CreatureSpawnEvent event) {
-        World w = event.getLocation().getWorld();
-        if (w != null && w.getName().startsWith("editmode_")) {
-            if (event.getEntity() instanceof LivingEntity) {
-                ((LivingEntity) event.getEntity()).setAI(false);
-            }
-        }
-    }
+    // @EventHandler
+    // public void onCreatureSpawn(org.bukkit.event.entity.CreatureSpawnEvent event) {
+    //     World w = event.getLocation().getWorld();
+    //     if (w != null && w.getName().startsWith("editmode_")) {
+    //         if (event.getEntity() instanceof LivingEntity) {
+    //             ((LivingEntity) event.getEntity()).setAI(false);
+    //         }
+    //         // auto-save mobs immediately when they appear in an editor world
+    //         String tpl = w.getName().substring("editmode_".length());
+    //         dungeonManager.saveEditMobs(tpl, w);
+    //     }
+    // }
 
     /**
      * Remember the world of a player's death. We store this here instead of

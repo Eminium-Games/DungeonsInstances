@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
@@ -31,6 +30,8 @@ public class DungeonManager {
     private final Map<String, World> dungeonCache = new HashMap<>();
     // worlds currently undergoing async chunk forcing (by name)
     private final java.util.Set<String> pendingChunkLoads = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
+    // scheduled task IDs for periodic auto-save of editmode worlds
+    private final Map<String,Integer> autoSaveTasks = new HashMap<>();
     private final File dungeonTemplatesFolder = new File("templates-dungeons");
     private final Map<String, SpawnPoint> spawnPoints = new HashMap<>();
     private final File spawnDataFile = new File("plugins/DungeonInstances/spawnPoints.json");
@@ -188,10 +189,13 @@ public class DungeonManager {
             // disable natural mob spawning in edit mode worlds
             if (instanceName.startsWith("editmode_")) {
                 instance.setGameRule(org.bukkit.GameRule.DO_MOB_SPAWNING, false);
-                // previous versions forced every chunk which could overload the
-                // server when large templates were used; let chunks load normally
-                // as the editor player explores instead.
-                //loadAndForceAllChunksAsync(instance, null);
+                // editor worlds no longer pre‑force every chunk.  the old
+                // loadAndForceAllChunksAsync helper (removed long ago) was the
+                // culprit when admins complained that the plugin was "loading all
+                // chunks in every world" during startup; we let chunks load on
+                // demand now.
+                String template = instanceName.substring("editmode_".length());
+                startAutoSave(instance, template);
             }
             // ensure all mobs in the new instance have AI enabled so they behave normally
             Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> setAIForWorld(instance, true), 1L);
@@ -232,6 +236,8 @@ public class DungeonManager {
                     () -> unloadDungeonInstance(instanceName), 20L);
             return;
         }
+        // cancel any auto-save task for this world
+        stopAutoSave(instanceName);
 
         World world = Bukkit.getWorld(instanceName);
         if (world != null) {
@@ -507,6 +513,30 @@ public class DungeonManager {
     }
 
     /**
+     * Start a repeating task that saves all mobs in the given edit-mode world
+     * back to the template file every minute.  Has no effect if already running.
+     */
+    public void startAutoSave(World world, String templateName) {
+        if (world == null || templateName == null) return;
+        String name = world.getName();
+        if (autoSaveTasks.containsKey(name)) {
+            return;
+        }
+        int task = Bukkit.getScheduler().scheduleSyncRepeatingTask(DungeonInstances.getInstance(), () -> {
+            // always attempt save; method checks for null world
+            saveEditMobs(templateName, world);
+        }, 1200L, 1200L); // 1200 ticks = 60s
+        autoSaveTasks.put(name, task);
+    }
+
+    public void stopAutoSave(String worldName) {
+        Integer id = autoSaveTasks.remove(worldName);
+        if (id != null) {
+            Bukkit.getScheduler().cancelTask(id);
+        }
+    }
+
+    /**
      * Return true if the server is currently running significantly below 20TPS.
      * Used to throttle our asynchronous loops when the server is already overloaded.
      */
@@ -529,6 +559,7 @@ public class DungeonManager {
      * Data structure representing a placed mob.
      */
     public static class MobData {
+        public String uuid;        // original entity UUID (for deduplication)
         public String type;
         public double x, y, z;
         public float yaw, pitch;
@@ -543,99 +574,65 @@ public class DungeonManager {
         return new File(mobDataFolder, templateName + ".json");
     }
 
-    /**
-     * Make sure every chunk that has been generated for this world is loaded and
-     * forced so entities won't vanish due to simulation distance.  The synchronous
-     * version loads everything immediately and may freeze the server; the async
-     * variant spreads the work over multiple ticks and calls the provided
-     * callback when finished.
-     */
-    // private void loadAndForceAllChunksAsync(World world, Runnable done) {
-    //     if (world == null) {
-    //         if (done != null) done.run();
-    //         return;
-    //     }
-    //     File regionFolder = new File(world.getWorldFolder(), "region");
-    //     if (!regionFolder.isDirectory()) {
-    //         if (done != null) done.run();
-    //         return;
-    //     }
-    //     File[] files = regionFolder.listFiles((f) -> f.getName().endsWith(".mca"));
-    //     if (files == null || files.length == 0) {
-    //         if (done != null) done.run();
-    //         return;
-    //     }
-
-    //     java.util.List<int[]> coords = new java.util.ArrayList<>();
-    //     for (File f : files) {
-    //         String name = f.getName(); // format r.<rx>.<rz>.mca
-    //         String[] parts = name.split("\\.");
-    //         if (parts.length >= 3) {
-    //             try {
-    //                 int rx = Integer.parseInt(parts[1]);
-    //                 int rz = Integer.parseInt(parts[2]);
-    //                 for (int cx = rx * 32; cx < rx * 32 + 32; cx++) {
-    //                     for (int cz = rz * 32; cz < rz * 32 + 32; cz++) {
-    //                         coords.add(new int[] {cx, cz});
-    //                     }
-    //                 }
-    //             } catch (NumberFormatException ignored) {
-    //             }
-    //         }
-    //     }
-
-    //     final int total = coords.size();
-    //     final int[] index = {0};
-    //     // mark pending
-    //     pendingChunkLoads.add(world.getName());
-    //     Bukkit.getScheduler().runTaskTimer(DungeonInstances.getInstance(), task -> {
-    //         int perTick = 50; // adjust as desired
-    //         for (int i = 0; i < perTick && index[0] < total; i++, index[0]++) {
-    //             int[] pair = coords.get(index[0]);
-    //             try {
-    //                 world.getChunkAt(pair[0], pair[1], true);
-    //                 world.setChunkForceLoaded(pair[0], pair[1], true);
-    //             } catch (Exception ex) {
-    //                 // ignore invalid chunk / corrupted data; warn once
-    //                 Bukkit.getLogger().warning("chunk async load failed for " + pair[0] + "," + pair[1] + ": " + ex.getMessage());
-    //             }
-    //         }
-    //         if (index[0] >= total) {
-    //             task.cancel();
-    //             pendingChunkLoads.remove(world.getName());
-    //             if (done != null) {
-    //                 Bukkit.getScheduler().runTask(DungeonInstances.getInstance(), done);
-    //             }
-    //         }
-    //     }, 0L, 1L);
-    // }
-
     public void saveEditMobs(String templateName, World editWorld) {
-        if (editWorld == null) return;
-        // disable natural spawning while we snapshot the world
-        editWorld.setGameRule(org.bukkit.GameRule.DO_MOB_SPAWNING, false);
-        // if the world has a region folder then we should attempt to load
-        // chunks one-by-one in an async task so we capture mobs in unloaded
-        // chunks without freezing the server or triggering corrupted chunk
-        // errors.  Otherwise fall back to the quick loop over already-loaded
-        // entities which is cheap but misses anything in an unloaded chunk.
-        File regionFolder = new File(editWorld.getWorldFolder(), "region");
-        if (regionFolder.isDirectory()) {
-            Bukkit.getLogger().info("saveEditMobs: performing async chunk-by-chunk scan for " + templateName);
-            collectMobDataAsync(templateName, editWorld);
-        } else {
-            doSaveEditMobs(templateName, editWorld);
-        }
+        // legacy entry point keeps previous behaviour (no filtering)
+        saveEditMobs(templateName, editWorld, null, 0.0);
     }
 
-    private void doSaveEditMobs(String templateName, World editWorld) {
+    /**
+     * Save mobs in an edit-world back to the template file.  If a centre and
+     * radius are supplied only mobs whose location is within the circle will be
+     * recorded.  This allows the admin to only persist the creatures they
+     * spawned nearby while ignoring random natural spawns happening elsewhere.
+     */
+    public void saveEditMobs(String templateName, World editWorld, Location centre, double radius) {
+        // convenience wrapper when only radius/centre filter is desired
+        saveEditMobs(templateName, editWorld, centre, radius, Double.NEGATIVE_INFINITY);
+    }
+
+    /**
+     * Save mobs in an edit-world back to the template file.  If a centre and
+     * radius are supplied only mobs whose location is within the circle will be
+     * recorded.  If minY is finite, creatures below that height are ignored.
+     * These filters can be combined (both may apply).
+     */
+    public void saveEditMobs(String templateName, World editWorld, Location centre, double radius, double minY) {
+        if (editWorld == null) {
+            return;
+        }
+        // disable natural spawning while we snapshot the world
+        editWorld.setGameRule(org.bukkit.GameRule.DO_MOB_SPAWNING, false);
+        // for stability we no longer attempt to enumerate every region chunk;
+        // simply save whatever entities are currently loaded.  unloaded chunks
+        // will be captured when they become loaded (via auto-save/creature spawn)
+        doSaveEditMobs(templateName, editWorld, centre, radius, minY);
+    }
+
+    private void doSaveEditMobs(String templateName, World editWorld, Location centre, double radius, double minY) {
         if (editWorld == null) return;
 
-        List<MobData> list = new java.util.ArrayList<>();
-        for (org.bukkit.entity.Entity e : editWorld.getEntities()) {
-            if (e instanceof org.bukkit.entity.LivingEntity && !(e instanceof Player)) {
+        File out = mobFileFor(templateName);
+        try (FileWriter fw = new FileWriter(out);
+             com.google.gson.stream.JsonWriter jw = new com.google.gson.stream.JsonWriter(fw)) {
+            jw.setIndent("  ");
+            jw.beginArray();
+            for (org.bukkit.entity.Entity e : editWorld.getEntities()) {
+                if (!(e instanceof org.bukkit.entity.LivingEntity) || e instanceof Player) {
+                    continue;
+                }
+                if (centre != null) {
+                    if (e.getLocation().distanceSquared(centre) > radius * radius) {
+                        continue;
+                    }
+                }
+                if (minY != Double.NEGATIVE_INFINITY) {
+                    if (e.getLocation().getY() < minY) {
+                        continue;
+                    }
+                }
                 org.bukkit.entity.LivingEntity le = (org.bukkit.entity.LivingEntity) e;
                 MobData d = new MobData();
+                d.uuid = e.getUniqueId().toString();
                 d.type = e.getType().name();
                 Location loc = e.getLocation();
                 d.x = loc.getX(); d.y = loc.getY(); d.z = loc.getZ();
@@ -651,10 +648,16 @@ public class DungeonManager {
                     Bukkit.getLogger().warning("NBT serialization returned null for " + e.getType() + " at "
                             + loc.toVector());
                 }
-                list.add(d);
+                gson.toJson(d, MobData.class, jw);
             }
+            jw.endArray();
+        } catch (IOException ex) {
+            Bukkit.getLogger().severe("Failed to write mob data for template " + templateName + ": " + ex.getMessage());
         }
-        saveMobList(templateName, editWorld, list);
+
+        // clear current creatures and respawn from the newly saved file
+        clearMobs(editWorld);
+        spawnSavedMobs(templateName, editWorld);
     }
 
     /**
@@ -703,113 +706,7 @@ public class DungeonManager {
         return extras;
     }
 
-    /**
-     * Write mob list to disk then clear and respawn them in the given world.
-     */
-    private void saveMobList(String templateName, World world, List<MobData> list) {
-        try (FileWriter w = new FileWriter(mobFileFor(templateName))) {
-            gson.toJson(list, w);
-        } catch (IOException ex) {
-            Bukkit.getLogger().severe("Failed to save edit mobs: " + ex.getMessage());
-        }
 
-        clearMobs(world);
-        for (MobData d : list) {
-            try {
-                org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.valueOf(d.type);
-                Location loc = new Location(world, d.x, d.y, d.z, d.yaw, d.pitch);
-                org.bukkit.entity.LivingEntity ent = (org.bukkit.entity.LivingEntity) world.spawnEntity(loc, type);
-                if (d.nbt != null) applyEntityNBT(ent, d.nbt);
-                if (d.extra != null && !d.extra.isEmpty()) applySerializedMap(ent, d.extra);
-                ent.setAI(false);
-            } catch (IllegalArgumentException ignored) {
-            }
-        }
-    }
-
-    /**
-     * Iterate through every chunk in the world, loading them a few per tick,
-     * collecting any mobs we find and then saving the result.  This avoids the
-     * synchronous "load all" behaviour that was previously killing servers.
-     */
-    private void collectMobDataAsync(String templateName, World editWorld) {
-        if (editWorld == null) return;
-        File regionFolder = new File(editWorld.getWorldFolder(), "region");
-        if (!regionFolder.isDirectory()) {
-            doSaveEditMobs(templateName, editWorld);
-            return;
-        }
-        File[] files = regionFolder.listFiles((f) -> f.getName().endsWith(".mca"));
-        if (files == null || files.length == 0) {
-            doSaveEditMobs(templateName, editWorld);
-            return;
-        }
-
-        java.util.List<int[]> coords = new java.util.ArrayList<>();
-        for (File f : files) {
-            String name = f.getName(); // r.<rx>.<rz>.mca
-            String[] parts = name.split("\\.");
-            if (parts.length >= 3) {
-                try {
-                    int rx = Integer.parseInt(parts[1]);
-                    int rz = Integer.parseInt(parts[2]);
-                    for (int cx = rx * 32; cx < rx * 32 + 32; cx++) {
-                        for (int cz = rz * 32; cz < rz * 32 + 32; cz++) {
-                            coords.add(new int[] {cx, cz});
-                        }
-                    }
-                } catch (NumberFormatException ignored) {
-                }
-            }
-        }
-
-        final int total = coords.size();
-        final int[] index = {0};
-        final List<MobData> collected = new java.util.ArrayList<>();
-        pendingChunkLoads.add(editWorld.getName());
-        Bukkit.getScheduler().runTaskTimer(DungeonInstances.getInstance(), task -> {
-            int perTick = 5; // fewer chunks per tick to reduce load
-            for (int i = 0; i < perTick && index[0] < total; i++, index[0]++) {
-                if (isServerLagging()) {
-                    // bail out early and continue next tick
-                    break;
-                }
-                int[] pair = coords.get(index[0]);
-                try {
-                    org.bukkit.Chunk chunk = editWorld.getChunkAt(pair[0], pair[1], true);
-                    for (org.bukkit.entity.Entity e : chunk.getEntities()) {
-                        try {
-                            if (e instanceof org.bukkit.entity.LivingEntity && !(e instanceof Player)) {
-                                org.bukkit.entity.LivingEntity le = (org.bukkit.entity.LivingEntity) e;
-                                MobData d = new MobData();
-                                d.type = e.getType().name();
-                                Location loc = e.getLocation();
-                                d.x = loc.getX(); d.y = loc.getY(); d.z = loc.getZ();
-                                d.yaw = loc.getYaw(); d.pitch = loc.getPitch();
-                                d.nbt = serializeEntityNBT(e);
-                                Map<String,Object> extras = gatherExtras(le);
-                                if (!extras.isEmpty()) d.extra = extras;
-                                if (d.nbt == null) {
-                                    Bukkit.getLogger().warning("NBT serialization returned null for " + e.getType() + " at " + loc.toVector());
-                                }
-                                collected.add(d);
-                            }
-                        } catch (Exception entityEx) {
-                            Bukkit.getLogger().warning("Error scanning entity in chunk " + pair[0] + "," + pair[1] + ": " + entityEx.getMessage());
-                        }
-                    }
-                } catch (Exception ex) {
-                    Bukkit.getLogger().warning("chunk load for save failed " + pair[0] + "," + pair[1] + ": " + ex.getMessage());
-                }
-            }
-            if (index[0] >= total) {
-                task.cancel();
-                pendingChunkLoads.remove(editWorld.getName());
-                Bukkit.getLogger().info("collectMobDataAsync: collected " + collected.size() + " mob entries for " + templateName);
-                Bukkit.getScheduler().runTask(DungeonInstances.getInstance(), () -> saveMobList(templateName, editWorld, collected));
-            }
-        }, 0L, 1L);
-    }
 
     public java.util.List<MobData> loadEditMobs(String templateName) {
         File f = mobFileFor(templateName);
@@ -828,54 +725,106 @@ public class DungeonManager {
      * that loading the corresponding chunks and applying NBT does not cause
      * a large hitch or crash.
      */
+    // helper used by various routines to ensure we only operate on worlds that
+    // are under the plugin's control.  previously a poorly‑placed call to
+    // spawnSavedMobs during startup could be blamed for "loading every chunk in
+    // every world" when in reality the method was never meant to touch the
+    // main server worlds.  we now sanity‑check the world name before proceeding.
+    private boolean isDungeonManagedWorld(World world) {
+        if (world == null)
+            return false;
+        String name = world.getName();
+        if (name.startsWith("editmode_") || name.startsWith("instance_"))
+            return true;
+        // template worlds are also legitimate targets when the cache has been
+        // populated (used by loadDungeonTemplate when populateMobs==true).
+        if (dungeonCache.containsKey(name))
+            return true;
+        return false;
+    }
+
     public void spawnSavedMobs(String templateName, World world) {
-        java.util.List<MobData> list = loadEditMobs(templateName);
-        if (list.isEmpty()) {
-            Bukkit.getLogger().info("spawnSavedMobs: no saved mobs found for template " + templateName);
+        // defensive guard – if this method ever gets called on a regular world we
+        // bail out now to avoid the impression that we are walking every world and
+        // force‑loading chunks.  such misuse was the source of the original report.
+        if (!isDungeonManagedWorld(world)) {
+            Bukkit.getLogger().warning("spawnSavedMobs called for non-dungeon world '" +
+                    (world != null ? world.getName() : "null") + "' (template " + templateName + "); skipping to avoid loading chunks.");
             return;
         }
 
-        final java.util.Iterator<MobData> it = list.iterator();
-        final int totalCount = list.size();
-        final int[] spawnedCount = {0};
-        Bukkit.getScheduler().runTaskTimer(DungeonInstances.getInstance(), task -> {
-            int perTick = 2; // very slow spawn rate to avoid overload
-            for (int i = 0; i < perTick && it.hasNext(); i++) {
-                if (isServerLagging()) {
-                    break;
-                }
-                MobData d = it.next();
-                spawnedCount[0]++;
-                try {
-                    org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.valueOf(d.type);
-                    Location loc = new Location(world, d.x, d.y, d.z, d.yaw, d.pitch);
-                    if (!world.isChunkLoaded(loc.getBlockX() >> 4, loc.getBlockZ() >> 4)) {
-                        world.loadChunk(loc.getBlockX() >> 4, loc.getBlockZ() >> 4);
-                    }
-                    Bukkit.getLogger().info("spawnSavedMobs: spawning " + type + " at " + loc);
-                    org.bukkit.entity.Entity spawned = world.spawnEntity(loc, type);
-                    if (spawned instanceof org.bukkit.entity.LivingEntity) {
-                        org.bukkit.entity.LivingEntity ent = (org.bukkit.entity.LivingEntity) spawned;
-                        if (d.nbt != null) {
-                            applyEntityNBT(ent, d.nbt);
+        File f = mobFileFor(templateName);
+        if (!f.exists()) {
+            Bukkit.getLogger().info("spawnSavedMobs: no saved mobs found for template " + templateName);
+            return;
+        }
+        try {
+            FileReader fr = new FileReader(f);
+            com.google.gson.stream.JsonReader jr = new com.google.gson.stream.JsonReader(fr);
+            jr.beginArray();
+            final int[] taskId = new int[1];
+            taskId[0] = Bukkit.getScheduler().scheduleSyncRepeatingTask(DungeonInstances.getInstance(), new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (!jr.hasNext()) {
+                            jr.endArray();
+                            jr.close();
+                            fr.close(); 
+                            Bukkit.getScheduler().cancelTask(taskId[0]);
+                            return;
                         }
-                        if (d.extra != null && !d.extra.isEmpty()) {
-                            Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
-                                applySerializedMap(ent, d.extra);
-                            }, 1L);
+                        MobData d = gson.fromJson(jr, MobData.class);
+                        // skip if same uuid already present
+                        if (d.uuid != null) {
+                            try {
+                                org.bukkit.entity.Entity existing = Bukkit.getEntity(java.util.UUID.fromString(d.uuid));
+                                if (existing != null) {
+                                    return;
+                                }
+                            } catch (IllegalArgumentException ignored) {
+                            }
                         }
-                        ent.setAI(true);
-                    } else {
-                        Bukkit.getLogger().warning("spawnSavedMobs: spawnEntity returned non-living or null for " + type);
+                        try {
+                            org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.valueOf(d.type);
+                            Location loc = new Location(world, d.x, d.y, d.z, d.yaw, d.pitch);
+                            if (!world.isChunkLoaded(loc.getBlockX() >> 4, loc.getBlockZ() >> 4)) {
+                                world.loadChunk(loc.getBlockX() >> 4, loc.getBlockZ() >> 4);
+                            }
+                            org.bukkit.entity.Entity spawned = world.spawnEntity(loc, type);
+                            if (spawned instanceof org.bukkit.entity.LivingEntity) {
+                                org.bukkit.entity.LivingEntity ent = (org.bukkit.entity.LivingEntity) spawned;
+                                // restore original UUID if possible (for deduplication/persistence)
+                                if (d.uuid != null) {
+                                    try {
+                                        java.util.UUID orig = java.util.UUID.fromString(d.uuid);
+                                        Object nms = ent.getClass().getMethod("getHandle").invoke(ent);
+                                        nms.getClass().getMethod("setUniqueId", java.util.UUID.class).invoke(nms, orig);
+                                    } catch (Exception ignore) {
+                                        // if reflection fails or method missing, ignore
+                                    }
+                                }
+                                if (d.nbt != null) {
+                                    applyEntityNBT(ent, d.nbt);
+                                }
+                                if (d.extra != null && !d.extra.isEmpty()) {
+                                    Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
+                                        applySerializedMap(ent, d.extra);
+                                    }, 1L);
+                                }
+                                ent.setAI(true);
+                            }
+                        } catch (IllegalArgumentException ignored) {
+                            Bukkit.getLogger().warning("Unknown mob type when spawning saved mob: " + d.type);
+                        }
+                    } catch (IOException ioe) {
+                        Bukkit.getLogger().severe("Error reading mob data while spawning: " + ioe.getMessage());
+                        Bukkit.getScheduler().cancelTask(taskId[0]);
                     }
-                } catch (IllegalArgumentException ignored) {
-                    Bukkit.getLogger().warning("Unknown mob type when spawning saved mob: " + d.type);
                 }
-            }
-            if (!it.hasNext()) {
-                task.cancel();
-                Bukkit.getLogger().info("spawnSavedMobs: finished " + spawnedCount[0] + "/" + totalCount + " mobs for " + templateName);
-            }
-        }, 0L, 1L);
+            }, 0L, 1L);
+        } catch (IOException e) {
+            Bukkit.getLogger().severe("Failed to open mob data file for " + templateName + ": " + e.getMessage());
+        }
     }
 }
