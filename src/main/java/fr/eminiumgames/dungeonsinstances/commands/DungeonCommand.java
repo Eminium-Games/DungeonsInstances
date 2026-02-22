@@ -54,6 +54,27 @@ public class DungeonCommand implements CommandExecutor {
             String adminSubCommand = args[1].toLowerCase();
 
             switch (adminSubCommand) {
+                case "load":
+                    if (args.length < 3) {
+                        player.sendMessage("Usage: /dungeon admin load <template-name>");
+                        return true;
+                    }
+                    String templateToLoad = args[2];
+                    dungeonLoad:
+                    {
+                        File templatesFolder = new File(
+                                DungeonInstances.getInstance().getDataFolder().getParentFile().getParentFile(),
+                                "templates-dungeons");
+                        File candidate = new File(templatesFolder, templateToLoad);
+                        if (!candidate.exists() || !candidate.isDirectory()) {
+                            player.sendMessage(PREFIX + ChatColor.RED + "No such template: " + templateToLoad);
+                            break dungeonLoad;
+                        }
+                        DungeonInstances.getInstance().getDungeonManager().loadDungeonTemplate(templateToLoad);
+                        player.sendMessage(PREFIX + ChatColor.GREEN + "Template loaded: " + templateToLoad);
+                    }
+                    break;
+
                 case "edit":
                     if (args.length < 3) {
                         player.sendMessage("Usage: /dungeon admin edit <world-name>");
@@ -69,9 +90,20 @@ public class DungeonCommand implements CommandExecutor {
                     if (editWorld != null) {
                         player.sendMessage("The dungeon template '" + templateName + "' is already in edit mode.");
                         DungeonInstances.getInstance().getDungeonManager().setAIForWorld(editWorld, false);
-                        // clear and respawn mobs from saved JSON so their NBT is applied
-                        DungeonInstances.getInstance().getDungeonManager().clearMobs(editWorld);
-                        DungeonInstances.getInstance().getDungeonManager().spawnSavedMobs(templateName, editWorld);
+                        // only clear/spawn if there are saved mobs and world has none
+                        World worldRef = editWorld;
+                        String templateRef = templateName;
+                        Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
+                            java.util.List<fr.eminiumgames.dungeonsinstances.managers.DungeonManager.MobData> saved =
+                                    DungeonInstances.getInstance().getDungeonManager().loadEditMobs(templateRef);
+                            boolean hasAny = worldRef.getEntities().stream()
+                                    .anyMatch(ent -> ent instanceof org.bukkit.entity.LivingEntity &&
+                                            !(ent instanceof Player));
+                            if (!saved.isEmpty() && !hasAny) {
+                                DungeonInstances.getInstance().getDungeonManager().clearMobs(worldRef);
+                                DungeonInstances.getInstance().getDungeonManager().spawnSavedMobs(templateRef, worldRef);
+                            }
+                        }, 20L); // 1 second delay
                         // teleport to configured spawn, not default world spawn
                         player.teleport(DungeonInstances.getInstance().getDungeonManager()
                                 .getSpawnLocation(templateName, editWorld));
@@ -87,7 +119,8 @@ public class DungeonCommand implements CommandExecutor {
                         // immediately disable AI for any mobs already present
                         DungeonInstances.getInstance().getDungeonManager().setAIForWorld(editWorld, false);
 
-                        // Teleport the player to the editing instance spawn (use configured spawn if set)
+                        // Teleport the player to the editing instance spawn (use configured spawn if
+                        // set)
                         player.teleport(DungeonInstances.getInstance().getDungeonManager()
                                 .getSpawnLocation(templateName, editWorld));
                         player.sendMessage("You are now editing the dungeon template: " + templateName);
@@ -139,23 +172,28 @@ public class DungeonCommand implements CommandExecutor {
                         return true;
                     }
 
-                    // ensure the world is saved so entities (animals etc.) are written to disk
+                    player.sendMessage(PREFIX + ChatColor.YELLOW + "Sauvegarde en cours...");
+
+                    // Ensure the world is saved with all entities (mobs with armor, attributes, NBT data, etc.)
                     World w = Bukkit.getWorld(worldNameToSave);
                     if (w != null) {
                         w.save();
-                        // also persist mob placements
+                        // Save all mobs with their equipment, attributes, and NBT data
                         DungeonInstances.getInstance().getDungeonManager().saveEditMobs(
                                 worldNameToSave.replace("editmode_", ""), w);
                     }
+
                     // Copy the edited world back to the template folder
                     DungeonInstances.getInstance().getDungeonManager().copyWorld(editWorldFolder, templateFolder);
 
-                    // Unload the world and teleport the player back to the main world
-                    DungeonInstances.getInstance().getDungeonManager().unloadDungeonInstance(worldNameToSave);
-                    player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
-
-                    player.sendMessage("The dungeon template '" + worldNameToSave.replace("editmode_", "")
-                            + "' has been updated with the changes from the editing instance.");
+                    // Schedule unload after a delay to ensure all data is saved
+                    final String worldToUnload = worldNameToSave;
+                    Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
+                        // DungeonInstances.getInstance().getDungeonManager().unloadDungeonInstance(worldToUnload);
+                        player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
+                        player.sendMessage(PREFIX + ChatColor.GREEN + "Le template de donjon '" 
+                                + worldToUnload.replace("editmode_", "") + "' a été sauvegardé avec succès !");
+                    }, 40L); // 2 secondes de délai pour s'assurer que tout est sauvegardé
                     break;
 
                 case "purge":
@@ -575,7 +613,6 @@ public class DungeonCommand implements CommandExecutor {
             }
             return true;
         }
-
 
         // Handle unknown subcommands
         if (!subCommand.equals("admin") && !subCommand.equals("instance") && !subCommand.equals("list")

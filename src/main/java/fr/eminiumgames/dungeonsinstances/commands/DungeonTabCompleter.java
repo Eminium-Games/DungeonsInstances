@@ -34,6 +34,7 @@ public class DungeonTabCompleter implements TabCompleter {
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("admin")) {
+            suggestions.add("load");
             suggestions.add("edit");
             suggestions.add("save");
             suggestions.add("purge");
@@ -54,7 +55,8 @@ public class DungeonTabCompleter implements TabCompleter {
             }
         }
 
-        if (args.length == 3 && args[0].equalsIgnoreCase("admin") && args[1].equalsIgnoreCase("edit")) {
+        if (args.length == 3 && args[0].equalsIgnoreCase("admin") &&
+                (args[1].equalsIgnoreCase("edit") || args[1].equalsIgnoreCase("load"))) {
             File templatesFolder = new File(DUNGEON_TEMPLATES_FOLDER);
             if (templatesFolder.exists() && templatesFolder.isDirectory()) {
                 for (File file : templatesFolder.listFiles()) {
