@@ -57,17 +57,20 @@ public class DungeonInstances extends JavaPlugin implements Listener {
             }
         }, 0L, 20L); // every second
 
-        // NOTE: we no longer auto-load every template world on enable.  loading
-        // a template will spawn its mobs and force chunks, which is undesirable for
-        // the original world; templates should be loaded explicitly by an admin
-        // when they intend to start instances or enter edit mode.
-        //
-        // The templates-dungeons directory is still used for listing available
-        // templates and for saving edited versions, but the worlds sitting
-        // there will not be touched until /dungeon admin load <name> is run.
+        // Load all dungeon templates at startup but do *not* populate mobs or
+        // clear natural spawns.  this avoids touching the source worlds while
+        // still making them available for instance creation later.
         File templatesFolder = new File(getDataFolder().getParentFile().getParentFile(), "templates-dungeons");
-        if (!templatesFolder.exists() || !templatesFolder.isDirectory()) {
-            getLogger().warning("The templates-dungeons folder does not exist or is not a directory. No dungeon templates are available.");
+        if (templatesFolder.exists() && templatesFolder.isDirectory()) {
+            File[] templateFolders = templatesFolder.listFiles(File::isDirectory);
+            if (templateFolders != null) {
+                for (File template : templateFolders) {
+                    dungeonManager.loadDungeonTemplate(template.getName(), false);
+                }
+            }
+        } else {
+            getLogger().warning(
+                    "The templates-dungeons folder does not exist or is not a directory. No dungeon templates were loaded.");
         }
 
         // Purge all instance worlds on plugin reload

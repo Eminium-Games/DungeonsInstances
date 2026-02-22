@@ -109,11 +109,16 @@ public class DungeonManager {
         }
     }
 
-    public void loadDungeonTemplate(String templateName) {
+    /**
+     * Load a template world into memory.  If <code>populateMobs</code> is true
+     * the routine will also clear natural spawns and respawn any saved mobs.
+     * When called during plugin startup we pass false to avoid touching productive
+     * template worlds; admins can load with mobs manually later if needed.
+     */
+    public void loadDungeonTemplate(String templateName, boolean populateMobs) {
         File templateFolder = new File(dungeonTemplatesFolder, templateName);
         Bukkit.getLogger().info("Attempting to load template: " + templateName);
         Bukkit.getLogger().info("Looking for template folder at: " + templateFolder.getAbsolutePath());
-
 
         if (!templateFolder.exists() || !templateFolder.isDirectory()) {
             Bukkit.getLogger().warning("Template " + templateName + " does not exist or is not a directory.");
@@ -126,14 +131,18 @@ public class DungeonManager {
         if (world != null) {
             dungeonCache.put(templateName, world);
             Bukkit.getLogger().info("Loaded dungeon template: " + templateName);
-            // ensure template starts clean: remove natural spawns then reapply saved mobs
-            clearMobs(world);
-            spawnSavedMobs(templateName, world);
+            // optionally clear existing mobs and respawn saved edit-mode creatures
+            if (populateMobs) {
+                clearMobs(world);
+                spawnSavedMobs(templateName, world);
+            }
         } else {
             Bukkit.getLogger().warning("Failed to load dungeon template: " + templateName);
         }
         
-        world.setGameRule(org.bukkit.GameRule.DO_MOB_SPAWNING, false);
+        if (world != null) {
+            world.setGameRule(org.bukkit.GameRule.DO_MOB_SPAWNING, false);
+        }
     }
 
     public World createDungeonInstance(String templateName, String instanceName) {
@@ -179,8 +188,10 @@ public class DungeonManager {
             // disable natural mob spawning in edit mode worlds
             if (instanceName.startsWith("editmode_")) {
                 instance.setGameRule(org.bukkit.GameRule.DO_MOB_SPAWNING, false);
-                // keep chunks loaded asynchronously so editing stays smooth
-                loadAndForceAllChunksAsync(instance, null);
+                // previous versions forced every chunk which could overload the
+                // server when large templates were used; let chunks load normally
+                // as the editor player explores instead.
+                //loadAndForceAllChunksAsync(instance, null);
             }
             // ensure all mobs in the new instance have AI enabled so they behave normally
             Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> setAIForWorld(instance, true), 1L);
@@ -539,65 +550,65 @@ public class DungeonManager {
      * variant spreads the work over multiple ticks and calls the provided
      * callback when finished.
      */
-    private void loadAndForceAllChunksAsync(World world, Runnable done) {
-        if (world == null) {
-            if (done != null) done.run();
-            return;
-        }
-        File regionFolder = new File(world.getWorldFolder(), "region");
-        if (!regionFolder.isDirectory()) {
-            if (done != null) done.run();
-            return;
-        }
-        File[] files = regionFolder.listFiles((f) -> f.getName().endsWith(".mca"));
-        if (files == null || files.length == 0) {
-            if (done != null) done.run();
-            return;
-        }
+    // private void loadAndForceAllChunksAsync(World world, Runnable done) {
+    //     if (world == null) {
+    //         if (done != null) done.run();
+    //         return;
+    //     }
+    //     File regionFolder = new File(world.getWorldFolder(), "region");
+    //     if (!regionFolder.isDirectory()) {
+    //         if (done != null) done.run();
+    //         return;
+    //     }
+    //     File[] files = regionFolder.listFiles((f) -> f.getName().endsWith(".mca"));
+    //     if (files == null || files.length == 0) {
+    //         if (done != null) done.run();
+    //         return;
+    //     }
 
-        java.util.List<int[]> coords = new java.util.ArrayList<>();
-        for (File f : files) {
-            String name = f.getName(); // format r.<rx>.<rz>.mca
-            String[] parts = name.split("\\.");
-            if (parts.length >= 3) {
-                try {
-                    int rx = Integer.parseInt(parts[1]);
-                    int rz = Integer.parseInt(parts[2]);
-                    for (int cx = rx * 32; cx < rx * 32 + 32; cx++) {
-                        for (int cz = rz * 32; cz < rz * 32 + 32; cz++) {
-                            coords.add(new int[] {cx, cz});
-                        }
-                    }
-                } catch (NumberFormatException ignored) {
-                }
-            }
-        }
+    //     java.util.List<int[]> coords = new java.util.ArrayList<>();
+    //     for (File f : files) {
+    //         String name = f.getName(); // format r.<rx>.<rz>.mca
+    //         String[] parts = name.split("\\.");
+    //         if (parts.length >= 3) {
+    //             try {
+    //                 int rx = Integer.parseInt(parts[1]);
+    //                 int rz = Integer.parseInt(parts[2]);
+    //                 for (int cx = rx * 32; cx < rx * 32 + 32; cx++) {
+    //                     for (int cz = rz * 32; cz < rz * 32 + 32; cz++) {
+    //                         coords.add(new int[] {cx, cz});
+    //                     }
+    //                 }
+    //             } catch (NumberFormatException ignored) {
+    //             }
+    //         }
+    //     }
 
-        final int total = coords.size();
-        final int[] index = {0};
-        // mark pending
-        pendingChunkLoads.add(world.getName());
-        Bukkit.getScheduler().runTaskTimer(DungeonInstances.getInstance(), task -> {
-            int perTick = 50; // adjust as desired
-            for (int i = 0; i < perTick && index[0] < total; i++, index[0]++) {
-                int[] pair = coords.get(index[0]);
-                try {
-                    world.getChunkAt(pair[0], pair[1], true);
-                    world.setChunkForceLoaded(pair[0], pair[1], true);
-                } catch (Exception ex) {
-                    // ignore invalid chunk / corrupted data; warn once
-                    Bukkit.getLogger().warning("chunk async load failed for " + pair[0] + "," + pair[1] + ": " + ex.getMessage());
-                }
-            }
-            if (index[0] >= total) {
-                task.cancel();
-                pendingChunkLoads.remove(world.getName());
-                if (done != null) {
-                    Bukkit.getScheduler().runTask(DungeonInstances.getInstance(), done);
-                }
-            }
-        }, 0L, 1L);
-    }
+    //     final int total = coords.size();
+    //     final int[] index = {0};
+    //     // mark pending
+    //     pendingChunkLoads.add(world.getName());
+    //     Bukkit.getScheduler().runTaskTimer(DungeonInstances.getInstance(), task -> {
+    //         int perTick = 50; // adjust as desired
+    //         for (int i = 0; i < perTick && index[0] < total; i++, index[0]++) {
+    //             int[] pair = coords.get(index[0]);
+    //             try {
+    //                 world.getChunkAt(pair[0], pair[1], true);
+    //                 world.setChunkForceLoaded(pair[0], pair[1], true);
+    //             } catch (Exception ex) {
+    //                 // ignore invalid chunk / corrupted data; warn once
+    //                 Bukkit.getLogger().warning("chunk async load failed for " + pair[0] + "," + pair[1] + ": " + ex.getMessage());
+    //             }
+    //         }
+    //         if (index[0] >= total) {
+    //             task.cancel();
+    //             pendingChunkLoads.remove(world.getName());
+    //             if (done != null) {
+    //                 Bukkit.getScheduler().runTask(DungeonInstances.getInstance(), done);
+    //             }
+    //         }
+    //     }, 0L, 1L);
+    // }
 
     public void saveEditMobs(String templateName, World editWorld) {
         if (editWorld == null) return;
@@ -617,7 +628,6 @@ public class DungeonManager {
         }
     }
 
-    @SuppressWarnings("deprecation")
     private void doSaveEditMobs(String templateName, World editWorld) {
         if (editWorld == null) return;
 
@@ -650,6 +660,7 @@ public class DungeonManager {
     /**
      * Helper that collects equipment/attributes metadata from a living entity.
      */
+    @SuppressWarnings("deprecation")
     private Map<String,Object> gatherExtras(org.bukkit.entity.LivingEntity le) {
         Map<String,Object> extras = new HashMap<>();
         // equipment

@@ -54,27 +54,6 @@ public class DungeonCommand implements CommandExecutor {
             String adminSubCommand = args[1].toLowerCase();
 
             switch (adminSubCommand) {
-                case "load":
-                    if (args.length < 3) {
-                        player.sendMessage("Usage: /dungeon admin load <template-name>");
-                        return true;
-                    }
-                    String templateToLoad = args[2];
-                    dungeonLoad:
-                    {
-                        File templatesFolder = new File(
-                                DungeonInstances.getInstance().getDataFolder().getParentFile().getParentFile(),
-                                "templates-dungeons");
-                        File candidate = new File(templatesFolder, templateToLoad);
-                        if (!candidate.exists() || !candidate.isDirectory()) {
-                            player.sendMessage(PREFIX + ChatColor.RED + "No such template: " + templateToLoad);
-                            break dungeonLoad;
-                        }
-                        DungeonInstances.getInstance().getDungeonManager().loadDungeonTemplate(templateToLoad);
-                        player.sendMessage(PREFIX + ChatColor.GREEN + "Template loaded: " + templateToLoad);
-                    }
-                    break;
-
                 case "edit":
                     if (args.length < 3) {
                         player.sendMessage("Usage: /dungeon admin edit <world-name>");
