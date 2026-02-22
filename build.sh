@@ -16,10 +16,11 @@ build_project() {
     # Compile and package the project
     mvn clean package -DskipTests -o -T 1C -q
 
-    # Move the generated JAR to the build directory
-    JAR_NAME="Dungeon Instances-1.0.0.jar"
-    if [ -f "target/$JAR_NAME" ]; then
-        mv "target/$JAR_NAME" "$BUILD_DIR/"
+    # Move the generated JAR to the build directory (pick first jar in target)
+    JAR_PATH=$(ls target/*.jar 2>/dev/null | head -n 1)
+    if [ -n "$JAR_PATH" ] && [ -f "$JAR_PATH" ]; then
+        JAR_NAME="DungeonInstances.jar"
+        mv "$JAR_PATH" "$BUILD_DIR/$JAR_NAME"
         echo "Build successful. JAR moved to $BUILD_DIR/$JAR_NAME"
     else
         echo "Build failed. JAR not found in target directory."

@@ -9,16 +9,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
+import org.bukkit.entity.Player;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
+// NBT serialization imports will be accessed via reflection at runtime
 
 import fr.eminiumgames.dungeonsinstances.DungeonInstances;
 
@@ -28,6 +32,9 @@ public class DungeonManager {
     private final File dungeonTemplatesFolder = new File("templates-dungeons");
     private final Map<String, SpawnPoint> spawnPoints = new HashMap<>();
     private final File spawnDataFile = new File("plugins/DungeonInstances/spawnPoints.json");
+
+    // store mobs placed in edit mode so they can be resurrected in instances
+    private final File mobDataFolder = new File("plugins/DungeonInstances/mobSpawns");
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public DungeonManager() {
@@ -166,6 +173,12 @@ public class DungeonManager {
             }
             // ensure all mobs in the new instance have AI enabled so they behave normally
             Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> setAIForWorld(instance, true), 1L);
+            // resurrect any mobs placed during edit
+            if (templateName != null) {
+                Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
+                    spawnSavedMobs(templateName, instance);
+                }, 2L);
+            }
         } else {
             Bukkit.getLogger().warning(
                     "Failed to load dungeon instance: " + instanceName + ". Check if the world folder is valid.");
@@ -251,7 +264,231 @@ public class DungeonManager {
         }
     }
 
+    /**
+     * Remove every non-player living entity from the specified world.
+     * Used when creating a fresh instance so that only our custom mobs
+     * are spawned.
+     */
+    public void clearMobs(World world) {
+        if (world == null) return;
+        for (org.bukkit.entity.Entity ent : world.getEntities()) {
+            if (ent instanceof org.bukkit.entity.LivingEntity && !(ent instanceof Player)) {
+                ent.remove();
+            }
+        }
+    }
+
+    // NBT helpers using reflection to avoid compile-time NMS dependency
+    private static final Map<Class<?>, java.lang.reflect.Method> saveMethodCache = new HashMap<>();
+
+    private String serializeEntityNBT(org.bukkit.entity.Entity e) {
+        try {
+            Object craftEntity = e.getClass().getMethod("getHandle").invoke(e);
+            Class<?> nmsEntityClass = craftEntity.getClass();
+
+            // check cache for previously discovered method
+            java.lang.reflect.Method saveMethod = saveMethodCache.get(nmsEntityClass);
+            Class<?> nbtClass = Class.forName("net.minecraft.nbt.NBTTagCompound");
+            Object nbtInstance = nbtClass.getConstructor().newInstance();
+
+            if (saveMethod == null) {
+                // inspect methods and log them for debugging
+                for (java.lang.reflect.Method m : nmsEntityClass.getMethods()) {
+                    if (m.getParameterCount() == 1 && m.getParameterTypes()[0].isAssignableFrom(nbtClass)) {
+                        String name = m.getName().toLowerCase();
+                        if (name.contains("save") || name.contains("a")) {
+                            saveMethod = m;
+                            break;
+                        }
+                    }
+                }
+                saveMethodCache.put(nmsEntityClass, saveMethod);
+                Bukkit.getLogger().info("serializeEntityNBT: chosen method for " + nmsEntityClass.getSimpleName() + " = "
+                        + (saveMethod != null ? saveMethod.getName() : "<none>"));
+            }
+
+            if (saveMethod != null) {
+                // invoke method; it may return the compound or a boolean/void
+                Object result = saveMethod.invoke(craftEntity, nbtInstance);
+                Object tagObj = result;
+                if (!nbtClass.isInstance(tagObj)) {
+                    // if the method returned something else, use our instance
+                    tagObj = nbtInstance;
+                }
+
+                // attempt to strip UUID entries
+                try {
+                    java.lang.reflect.Method removeMethod = tagObj.getClass().getMethod("remove", String.class);
+                    removeMethod.invoke(tagObj, "UUID");
+                    removeMethod.invoke(tagObj, "OwnerUUID");
+                    removeMethod.invoke(tagObj, "UUIDLeast");
+                    removeMethod.invoke(tagObj, "UUIDMost");
+                } catch (Exception ignore) {
+                }
+
+                String serialized = tagObj.toString();
+                serialized = serialized.replaceAll("UUID[LM]?ost?:[0-9-]+", "");
+                serialized = serialized.replaceAll("UUID:[0-9L;\\.]+", "");
+                Bukkit.getLogger().info("serializeEntityNBT: raw nbt for " + e.getType() + " = " + serialized);
+                if ("{}".equals(serialized.trim())) {
+                    // if nothing was captured, manually build a tiny map
+                    Map<String,Object> manual = new HashMap<>();
+                    if (e.getCustomName() != null) manual.put("CustomName", e.getCustomName());
+                    if (e.isCustomNameVisible()) manual.put("CustomNameVisible", true);
+                    if (e instanceof org.bukkit.entity.Damageable) {
+                        manual.put("Health", ((org.bukkit.entity.Damageable)e).getHealth());
+                    }
+                    if (e.isInvulnerable()) manual.put("Invulnerable", true);
+                    if (!manual.isEmpty()) {
+                        String jsonMap = gson.toJson(manual);
+                        Bukkit.getLogger().info("serializeEntityNBT: created manual map for " + e.getType() + " = " + jsonMap);
+                        return jsonMap;
+                    }
+                }
+                return serialized;
+            } else {
+                Bukkit.getLogger().warning("No suitable NBT save method for " + nmsEntityClass.getName() + "; falling back to Bukkit serialization.");
+            }
+        } catch (Exception ex) {
+            Bukkit.getLogger().warning("Reflection NBT failed for " + e + ": " + ex.getMessage());
+        }
+
+        // fallback: use Bukkit's ConfigurationSerializable interface
+        try {
+            if (e instanceof org.bukkit.configuration.serialization.ConfigurationSerializable) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = ((org.bukkit.configuration.serialization.ConfigurationSerializable) e)
+                        .serialize();
+                String jsonMap = gson.toJson(map);
+                Bukkit.getLogger().info("serializeEntityNBT: fallback map for " + e.getType() + " = " + jsonMap);
+                return jsonMap;
+            }
+        } catch (Exception ex) {
+            Bukkit.getLogger().warning("Fallback serialize failed for " + e + ": " + ex.getMessage());
+        }
+        return null;
+    }
+
+    private void applyEntityNBT(org.bukkit.entity.Entity e, String nbt) {
+        // quick heuristics: if the string contains quotes it is likely the JSON map fallback
+        if (nbt != null && nbt.contains("\"") && nbt.trim().startsWith("{")) {
+            try {
+                Map<String, Object> map = gson.fromJson(nbt, new TypeToken<Map<String, Object>>() {}.getType());
+                applySerializedMap(e, map);
+                return;
+            } catch (Exception ex) {
+                Bukkit.getLogger().warning("Failed to apply JSON map to " + e + ": " + ex.getMessage());
+                // fall through to NBT attempt
+            }
+        }
+
+        try {
+            Class<?> nbtClass = Class.forName("net.minecraft.nbt.NBTTagCompound");
+            Class<?> parserClass = Class.forName("net.minecraft.nbt.MojangsonParser");
+            java.lang.reflect.Method parseMethod = parserClass.getMethod("parse", String.class);
+            Object tag = parseMethod.invoke(null, nbt);
+            Object craftEntity = e.getClass().getMethod("getHandle").invoke(e);
+            Class<?> nmsEntityClass = craftEntity.getClass();
+            nmsEntityClass.getMethod("load", nbtClass).invoke(craftEntity, tag);
+        } catch (Exception ex) {
+            Bukkit.getLogger().warning("Couldn't apply NBT to " + e + ": " + ex.getMessage());
+        }
+    }
+
+    // apply a Bukkit serialized map back to an entity; handles a few common keys
+    private void applySerializedMap(org.bukkit.entity.Entity e, Map<String, Object> map) {
+        if (map == null || map.isEmpty()) return;
+        // custom name
+        if (map.containsKey("CustomName")) {
+            e.setCustomName((String) map.get("CustomName"));
+        }
+        if (map.containsKey("CustomNameVisible")) {
+            e.setCustomNameVisible(Boolean.TRUE.equals(map.get("CustomNameVisible")));
+        }
+        if (e instanceof org.bukkit.entity.Damageable && map.containsKey("Health")) {
+            Object h = map.get("Health");
+            if (h instanceof Number) {
+                ((org.bukkit.entity.Damageable) e).setHealth(((Number) h).doubleValue());
+            }
+        }
+        if (map.containsKey("Invulnerable")) {
+            e.setInvulnerable(Boolean.TRUE.equals(map.get("Invulnerable")));
+        }
+        // more fields can be added as needed
+    }
+
     public boolean isEditMode(String worldName) {
         return worldName.startsWith("editmode_");
+    }
+
+    /**
+     * Data structure representing a placed mob.
+     */
+    public static class MobData {
+        public String type;
+        public double x, y, z;
+        public float yaw, pitch;
+        public String nbt;        // full NBT string excluding UUID
+    }
+
+    private File mobFileFor(String templateName) {
+        if (!mobDataFolder.exists()) {
+            mobDataFolder.mkdirs();
+        }
+        return new File(mobDataFolder, templateName + ".json");
+    }
+
+    public void saveEditMobs(String templateName, World editWorld) {
+        List<MobData> list = new java.util.ArrayList<>();
+        for (org.bukkit.entity.Entity e : editWorld.getEntities()) {
+            if (e instanceof org.bukkit.entity.LivingEntity && !(e instanceof Player)) {
+                MobData d = new MobData();
+                d.type = e.getType().name();
+                Location loc = e.getLocation();
+                d.x = loc.getX(); d.y = loc.getY(); d.z = loc.getZ();
+                d.yaw = loc.getYaw(); d.pitch = loc.getPitch();
+                d.nbt = serializeEntityNBT(e);
+                if (d.nbt == null) {
+                    Bukkit.getLogger().warning("NBT serialization returned null for " + e.getType() + " at "
+                            + loc.toVector());
+                }
+                list.add(d);
+            }
+        }
+        try (FileWriter w = new FileWriter(mobFileFor(templateName))) {
+            gson.toJson(list, w);
+        } catch (IOException ex) {
+            Bukkit.getLogger().severe("Failed to save edit mobs: " + ex.getMessage());
+        }
+    }
+
+    public java.util.List<MobData> loadEditMobs(String templateName) {
+        File f = mobFileFor(templateName);
+        if (!f.exists()) return java.util.Collections.emptyList();
+        try (java.io.FileReader r = new java.io.FileReader(f)) {
+            java.util.List<MobData> l = gson.fromJson(r, new TypeToken<java.util.List<MobData>>(){}.getType());
+            return l != null ? l : java.util.Collections.emptyList();
+        } catch (IOException ex) {
+            Bukkit.getLogger().severe("Failed to load edit mobs: " + ex.getMessage());
+            return java.util.Collections.emptyList();
+        }
+    }
+
+    public void spawnSavedMobs(String templateName, World world) {
+        java.util.List<MobData> list = loadEditMobs(templateName);
+        for (MobData d : list) {
+            try {
+                org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.valueOf(d.type);
+                Location loc = new Location(world, d.x, d.y, d.z, d.yaw, d.pitch);
+                org.bukkit.entity.LivingEntity ent = (org.bukkit.entity.LivingEntity) world.spawnEntity(loc, type);
+                // apply stored NBT if present
+                if (d.nbt != null) {
+                    applyEntityNBT(ent, d.nbt);
+                }
+                ent.setAI(true);
+            } catch (IllegalArgumentException ignored) {
+                Bukkit.getLogger().warning("Unknown mob type when spawning saved mob: " + d.type);
+            }
+        }
     }
 }

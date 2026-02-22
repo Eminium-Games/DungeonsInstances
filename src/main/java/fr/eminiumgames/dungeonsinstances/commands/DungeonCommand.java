@@ -68,7 +68,13 @@ public class DungeonCommand implements CommandExecutor {
 
                     if (editWorld != null) {
                         player.sendMessage("The dungeon template '" + templateName + "' is already in edit mode.");
-                        player.teleport(editWorld.getSpawnLocation());
+                        DungeonInstances.getInstance().getDungeonManager().setAIForWorld(editWorld, false);
+                        // clear and respawn mobs from saved JSON so their NBT is applied
+                        DungeonInstances.getInstance().getDungeonManager().clearMobs(editWorld);
+                        DungeonInstances.getInstance().getDungeonManager().spawnSavedMobs(templateName, editWorld);
+                        // teleport to configured spawn, not default world spawn
+                        player.teleport(DungeonInstances.getInstance().getDungeonManager()
+                                .getSpawnLocation(templateName, editWorld));
                         return true;
                     }
 
@@ -137,6 +143,9 @@ public class DungeonCommand implements CommandExecutor {
                     World w = Bukkit.getWorld(worldNameToSave);
                     if (w != null) {
                         w.save();
+                        // also persist mob placements
+                        DungeonInstances.getInstance().getDungeonManager().saveEditMobs(
+                                worldNameToSave.replace("editmode_", ""), w);
                     }
                     // Copy the edited world back to the template folder
                     DungeonInstances.getInstance().getDungeonManager().copyWorld(editWorldFolder, templateFolder);
