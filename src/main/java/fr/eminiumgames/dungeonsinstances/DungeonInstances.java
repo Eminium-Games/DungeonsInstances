@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -42,6 +43,19 @@ public class DungeonInstances extends JavaPlugin implements Listener {
 
         // Register event listener
         getServer().getPluginManager().registerEvents(this, this);
+
+        // schedule a task to continually enforce NoAI on edit‑mode worlds
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            for (World w : Bukkit.getWorlds()) {
+                if (w.getName().startsWith("editmode_")) {
+                    for (LivingEntity ent : w.getLivingEntities()) {
+                        if (ent.hasAI()) {
+                            ent.setAI(false);
+                        }
+                    }
+                }
+            }
+        }, 0L, 20L); // every second
 
         // Load all dungeon templates at startup
         File templatesFolder = new File(getDataFolder().getParentFile().getParentFile(), "templates-dungeons");
@@ -127,6 +141,16 @@ public class DungeonInstances extends JavaPlugin implements Listener {
         }
     }
 
+    @EventHandler
+    public void onCreatureSpawn(org.bukkit.event.entity.CreatureSpawnEvent event) {
+        World w = event.getLocation().getWorld();
+        if (w != null && w.getName().startsWith("editmode_")) {
+            if (event.getEntity() instanceof LivingEntity) {
+                ((LivingEntity) event.getEntity()).setAI(false);
+            }
+        }
+    }
+
     /**
      * Remember the world of a player's death. We store this here instead of
      * relying on event.getPlayer().getWorld() in the respawn listener because
@@ -176,7 +200,6 @@ public class DungeonInstances extends JavaPlugin implements Listener {
             Bukkit.getLogger()
                     .info("[DungeonInstances] event default respawn location was " + event.getRespawnLocation());
             Bukkit.getLogger().info("[DungeonInstances] world spawn location is " + world.getSpawnLocation());
-            // can't access the private map directly; we'll infer from spawnLoc below
 
             org.bukkit.Location spawnLoc = dungeonManager.getSpawnLocation(templateName, world);
             Bukkit.getLogger().info("[DungeonInstances] computed spawnLoc = " + spawnLoc);
@@ -186,20 +209,10 @@ public class DungeonInstances extends JavaPlugin implements Listener {
                         + templateName + "' in world " + worldName + "; using world spawn");
                 spawnLoc = world.getSpawnLocation();
             }
-            final org.bukkit.Location finalSpawnLoc = spawnLoc;
-            final String finalWorldName = deathWorld;
-            // force respawn location even if the chosen location is the same as default
-            // event.setRespawnLocation(finalSpawnLoc);
-            Bukkit.getLogger().info("[DungeonInstances] setting respawn location to " + finalSpawnLoc);
-            Bukkit.getScheduler().runTaskLater(this, () -> {
 
-                World respawnWorld = Bukkit.getWorld(finalWorldName);
-                org.bukkit.Location finalspawnLoc = dungeonManager.getSpawnLocation(templateName, respawnWorld);
-
-                player.teleport(finalspawnLoc);
-                Bukkit.getLogger().info("[DungeonInstances] player teleported to " + finalspawnLoc);
-            }, 20L); // delay by 1 tick to ensure it happens after the default respawn logic
-            // player.teleport(finalSpawnLoc);
+            // force respawn location for the event
+            event.setRespawnLocation(spawnLoc);
+            Bukkit.getLogger().info("[DungeonInstances] setting respawn location to " + spawnLoc);
         }
     }
 }

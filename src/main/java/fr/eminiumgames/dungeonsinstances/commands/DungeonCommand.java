@@ -75,9 +75,8 @@ public class DungeonCommand implements CommandExecutor {
                     editWorld = DungeonInstances.getInstance().getDungeonManager().createDungeonInstance(templateName,
                             editWorldName);
                     if (editWorld != null) {
-                        // Pass only the template name to setEditMode
-                        // DungeonInstances.getInstance().getDungeonManager().setEditMode(templateName,
-                        // true);
+                        // immediately disable AI for any mobs already present
+                        DungeonInstances.getInstance().getDungeonManager().setAIForWorld(editWorld, false);
 
                         // Teleport the player to the editing instance
                         player.teleport(editWorld.getSpawnLocation());
@@ -127,6 +126,11 @@ public class DungeonCommand implements CommandExecutor {
                         return true;
                     }
 
+                    // ensure the world is saved so entities (animals etc.) are written to disk
+                    World w = Bukkit.getWorld(worldNameToSave);
+                    if (w != null) {
+                        w.save();
+                    }
                     // Copy the edited world back to the template folder
                     DungeonInstances.getInstance().getDungeonManager().copyWorld(editWorldFolder, templateFolder);
 
@@ -139,15 +143,25 @@ public class DungeonCommand implements CommandExecutor {
                     break;
 
                 case "purge":
+                    // first unload any instances that are currently loaded
+                    for (World loaded : Bukkit.getWorlds()) {
+                        if (loaded.getName().startsWith("instance_")) {
+                            DungeonInstances.getInstance().getDungeonManager()
+                                    .unloadDungeonInstance(loaded.getName());
+                        }
+                    }
+
+                    // then delete any leftover folders on disk
                     File worldContainer = Bukkit.getWorldContainer();
                     File[] instanceFolders = worldContainer
                             .listFiles((file) -> file.isDirectory() && file.getName().startsWith("instance_"));
 
-                    if (instanceFolders != null) {
+                    if (instanceFolders != null && instanceFolders.length > 0) {
                         for (File instanceFolder : instanceFolders) {
                             DungeonInstances.getInstance().getDungeonManager()
                                     .unloadDungeonInstance(instanceFolder.getName());
-                            deleteFolder(instanceFolder);
+                            // unloadDungeonInstance already removes the folder, so this
+                            // second call is harmless
                         }
                         player.sendMessage("All dungeon instances have been purged.");
                     } else {
@@ -546,95 +560,6 @@ public class DungeonCommand implements CommandExecutor {
             return true;
         }
 
-        if (subCommand.equals("admin") && args.length > 1 && args[1].equalsIgnoreCase("purge")) {
-            File worldContainer = Bukkit.getWorldContainer();
-            File[] instanceFolders = worldContainer
-                    .listFiles((file) -> file.isDirectory() && file.getName().startsWith("instance_"));
-
-            if (instanceFolders != null) {
-                for (File instanceFolder : instanceFolders) {
-                    DungeonInstances.getInstance().getDungeonManager().unloadDungeonInstance(instanceFolder.getName());
-                    deleteFolder(instanceFolder);
-                }
-                player.sendMessage("All dungeon instances have been purged.");
-            } else {
-                player.sendMessage("No dungeon instances found to purge.");
-            }
-
-            return true;
-        }
-
-        if (subCommand.equals("admin") && args.length > 2 && args[1].equalsIgnoreCase("save")) {
-            String templateName = args[2];
-            String editWorldName = "edit_" + templateName;
-
-            // Check if the world is in edit mode
-            if (!DungeonInstances.getInstance().getDungeonManager().isEditMode(editWorldName)) {
-                player.sendMessage("The world '" + editWorldName + "' is not in edit mode.");
-                return true;
-            }
-
-            // Save changes from the editing instance back to the template
-            File templatesFolder = new File(
-                    DungeonInstances.getInstance().getDataFolder().getParentFile().getParentFile(),
-                    "templates-dungeons");
-            File templateFolder = new File(templatesFolder, templateName);
-            File editWorldFolder = new File(Bukkit.getWorldContainer(), editWorldName);
-
-            if (!editWorldFolder.exists() || !editWorldFolder.isDirectory()) {
-                player.sendMessage("The editing instance for '" + templateName + "' does not exist.");
-                return true;
-            }
-
-            // Copy the edited world back to the template folder
-            DungeonInstances.getInstance().getDungeonManager().copyWorld(editWorldFolder, templateFolder);
-
-            // Unload and delete the editing instance
-            DungeonInstances.getInstance().getDungeonManager().unloadDungeonInstance(editWorldName);
-
-            player.sendMessage("The dungeon template '" + templateName
-                    + "' has been updated with the changes from the editing instance.");
-            return true;
-        }
-
-        if (subCommand.equals("admin") && args.length > 2 && args[1].equalsIgnoreCase("edit")) {
-            String templateName = args[2];
-
-            // Check if the template exists
-            File templatesFolder = new File(
-                    DungeonInstances.getInstance().getDataFolder().getParentFile().getParentFile(),
-                    "templates-dungeons");
-            File templateFolder = new File(templatesFolder, templateName);
-
-            if (!templateFolder.exists() || !templateFolder.isDirectory()) {
-                player.sendMessage("Dungeon template '" + templateName + "' does not exist.");
-                return true;
-            }
-
-            // Create a specialized editing instance with a name starting with 'editmode_'
-            String editWorldName = "editmode_" + templateName;
-            World editWorld = Bukkit.getWorld(editWorldName);
-
-            if (editWorld != null) {
-                player.sendMessage("The dungeon template '" + templateName + "' is already in edit mode.");
-                player.teleport(editWorld.getSpawnLocation());
-                return true;
-            }
-
-            editWorld = DungeonInstances.getInstance().getDungeonManager().createDungeonInstance(templateName,
-                    editWorldName);
-            if (editWorld != null) {
-                // Pass only the template name to setEditMode
-                // DungeonInstances.getInstance().getDungeonManager().setEditMode(templateName,
-                // true);
-
-                // Teleport the player to the editing instance
-                player.teleport(editWorld.getSpawnLocation());
-                player.sendMessage("You are now editing the dungeon template: " + templateName);
-            } else {
-                player.sendMessage("Failed to create an editing instance for the dungeon template: " + templateName);
-            }
-        }
 
         // Handle unknown subcommands
         if (!subCommand.equals("admin") && !subCommand.equals("instance") && !subCommand.equals("list")

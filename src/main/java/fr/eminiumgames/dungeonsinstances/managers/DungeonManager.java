@@ -20,6 +20,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import fr.eminiumgames.dungeonsinstances.DungeonInstances;
+
 public class DungeonManager {
 
     private final Map<String, World> dungeonCache = new HashMap<>();
@@ -158,6 +160,12 @@ public class DungeonManager {
         World instance = Bukkit.createWorld(new WorldCreator(instanceName));
         if (instance != null) {
             Bukkit.getLogger().info("Created dungeon instance: " + instanceName);
+            // disable natural mob spawning in edit mode worlds
+            if (instanceName.startsWith("editmode_")) {
+                instance.setGameRule(org.bukkit.GameRule.DO_MOB_SPAWNING, false);
+            }
+            // ensure all mobs in the new instance have AI enabled so they behave normally
+            Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> setAIForWorld(instance, true), 1L);
         } else {
             Bukkit.getLogger().warning(
                     "Failed to load dungeon instance: " + instanceName + ". Check if the world folder is valid.");
@@ -165,20 +173,43 @@ public class DungeonManager {
         return instance;
     }
 
+    /**
+     * Quickly set the AI flag for all living entities in the given world.
+     * @param world world to operate on (may be null)
+     * @param ai true to give entities AI, false to freeze them
+     */
+    public void setAIForWorld(World world, boolean ai) {
+        if (world == null) {
+            return;
+        }
+        for (org.bukkit.entity.LivingEntity ent : world.getLivingEntities()) {
+            ent.setAI(ai);
+        }
+    }
+
     public void unloadDungeonInstance(String instanceName) {
         World world = Bukkit.getWorld(instanceName);
         if (world != null) {
+            // move any players out before unloading to avoid leaving them stranded
+            for (org.bukkit.entity.Player p : world.getPlayers()) {
+                org.bukkit.Location safe = Bukkit.getWorlds().get(0).getSpawnLocation();
+                p.teleport(safe);
+                p.sendMessage("[DungeonInstances] You have been moved out of an unloaded instance.");
+            }
+
             Bukkit.unloadWorld(world, false);
             Bukkit.getLogger().info("Unloaded dungeon instance: " + instanceName);
-
-            // Delete the instance folder
-            File instanceFolder = new File(Bukkit.getWorldContainer(), instanceName);
-            if (instanceFolder.exists()) {
-                deleteFolder(instanceFolder);
-                Bukkit.getLogger().info("Deleted dungeon instance folder: " + instanceFolder.getAbsolutePath());
-            }
         } else {
-            Bukkit.getLogger().warning("Dungeon instance " + instanceName + " is not loaded.");
+            Bukkit.getLogger().info("Dungeon instance " + instanceName + " was not loaded.");
+        }
+
+        // always attempt to remove the folder regardless of whether the world was loaded
+        File instanceFolder = new File(Bukkit.getWorldContainer(), instanceName);
+        if (instanceFolder.exists()) {
+            deleteFolder(instanceFolder);
+            Bukkit.getLogger().info("Deleted dungeon instance folder: " + instanceFolder.getAbsolutePath());
+        } else {
+            Bukkit.getLogger().info("No folder found for dungeon instance: " + instanceName);
         }
     }
 
