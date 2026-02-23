@@ -117,7 +117,7 @@ public class DungeonScoreboardManager {
                 break;
         }
         String diffLine = diffColor + (bold ? ChatColor.BOLD.toString() : "") + diff.toString();
-        objective.getScore(ChatColor.DARK_GRAY + "Difficulté: " + diffLine).setScore(score--);
+        objective.getScore(ChatColor.GRAY + "Difficulté: " + diffLine).setScore(score--);
         // Header separator (uniform color)
         objective.getScore(ChatColor.DARK_GRAY + "────────────").setScore(score--);
 
