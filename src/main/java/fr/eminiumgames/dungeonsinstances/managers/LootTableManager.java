@@ -292,9 +292,9 @@ public class LootTableManager {
         if (entry == null || entry.item == null)
             return null;
         // diagnostic: print raw entry map
-        Bukkit.getLogger().info("buildItem called for item=" + entry.item + " nbt=" + entry.nbt);
+        // Bukkit.getLogger().info("buildItem called for item=" + entry.item + " nbt=" + entry.nbt);
         if (entry.nbt != null && entry.nbt.isEmpty()) {
-            Bukkit.getLogger().info("buildItem: entry.nbt is empty for " + entry.item);
+            // Bukkit.getLogger().info("buildItem: entry.nbt is empty for " + entry.item);
         }
 
         String matName = entry.item.toUpperCase();
@@ -370,7 +370,7 @@ public class LootTableManager {
         }
 
         if (entry.nbt != null && !entry.nbt.isEmpty()) {
-            Bukkit.getLogger().info("buildItem processing nbt keys=" + entry.nbt.keySet());
+            // Bukkit.getLogger().info("buildItem processing nbt keys=" + entry.nbt.keySet());
         }
 
         // ensure the components tag exists in the config map so file reflects
@@ -389,7 +389,7 @@ public class LootTableManager {
                 comps.put("minecraft:custom_name", compName);
             }
             entry.nbt.put("components", comps);
-            Bukkit.getLogger().info("LootTableManager: injecting full components for " + entry.item + " -> " + comps);
+            // Bukkit.getLogger().info("LootTableManager: injecting full components for " + entry.item + " -> " + comps);
             save();
         }
 
@@ -418,15 +418,15 @@ public class LootTableManager {
 
         ItemMeta meta = stack.getItemMeta();
         if (meta != null && entry.nbt != null) {
-            Bukkit.getLogger()
-                    .info("buildItem applying meta for " + entry.item + " with nbt keys=" + entry.nbt.keySet());
+            // Bukkit.getLogger()
+            //         .info("buildItem applying meta for " + entry.item + " with nbt keys=" + entry.nbt.keySet());
             if (entry.nbt.containsKey("components") && entry.nbt.get("components") instanceof Map) {
-                Bukkit.getLogger().info("buildItem processing components for " + entry.item);
+                // Bukkit.getLogger().info("buildItem processing components for " + entry.item);
                 Map<String, Object> components = (Map<String, Object>) entry.nbt.get("components");
                 if (components.containsKey("minecraft:item_name")) {
-                    Bukkit.getLogger().info("buildItem found minecraft:item_name in components for " + entry.item);
+                    // Bukkit.getLogger().info("buildItem found minecraft:item_name in components for " + entry.item);
                     Object name = components.get("minecraft:item_name");
-                    Bukkit.getLogger().info("buildItem setting custom name from minecraft:item_name: " + name);
+                    // Bukkit.getLogger().info("buildItem setting custom name from minecraft:item_name: " + name);
                     meta.setItemName((String) name);
 
                 }
@@ -447,7 +447,7 @@ public class LootTableManager {
         meta.setItemName(compName);
         stack.setItemMeta(meta);
         // }
-        Bukkit.getLogger().info("buildItem result stack=" + stack + " serialized=" + stack.serialize());
+        // Bukkit.getLogger().info("buildItem result stack=" + stack + " serialized=" + stack.serialize());
         return stack;
     }
 
