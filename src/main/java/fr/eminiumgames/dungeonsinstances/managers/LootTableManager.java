@@ -291,164 +291,87 @@ public class LootTableManager {
     ItemStack buildItem(LootItem entry) {
         if (entry == null || entry.item == null)
             return null;
-        // diagnostic: print raw entry map
-        // Bukkit.getLogger().info("buildItem called for item=" + entry.item + " nbt=" + entry.nbt);
-        if (entry.nbt != null && entry.nbt.isEmpty()) {
-            // Bukkit.getLogger().info("buildItem: entry.nbt is empty for " + entry.item);
-        }
 
-        String matName = entry.item.toUpperCase();
-        Material mat = Material.matchMaterial(matName);
-        if (mat == null && matName.contains(":")) {
-            // try without namespace prefix
-            String after = matName.substring(matName.indexOf(":") + 1);
-            mat = Material.matchMaterial(after);
-        }
+        Material mat = resolveMaterial(entry.item);
         if (mat == null) {
             Bukkit.getLogger().warning("Unknown material in loot config: " + entry.item);
             mat = Material.STONE;
         }
+
         ItemStack stack = new ItemStack(mat, Math.max(1, entry.count));
-        // compute a component name regardless of NBT content so item entity can
-        // always carry something human-readable. prioritize explicit map keys,
-        // then fall back to a nicely-formatted material name. we keep track of
-        // whether an explicit name was provided so we don't accidentally
-        // overwrite a custom value later.
-        boolean explicitName = false;
-        String compName = null;
-        if (entry.nbt != null) {
-            // top-level names
-            if (entry.nbt.containsKey("item_name")) {
-                Object n = entry.nbt.get("item_name");
-                if (n instanceof String) {
-                    compName = (String) n;
-                    explicitName = true;
-                }
-            }
-            if (!explicitName && entry.nbt.containsKey("displayName")) {
-                Object n = entry.nbt.get("displayName");
-                if (n instanceof String) {
-                    compName = (String) n;
-                    explicitName = true;
-                }
-            }
-            // also inspect nested components map for the same keys, which some
-            // configurations use
-            if (!explicitName && entry.nbt.containsKey("components")) {
-                Object compsObj = entry.nbt.get("components");
-                if (compsObj instanceof Map) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> comps = (Map<String, Object>) compsObj;
-                    if (comps.containsKey("minecraft:item_name")) {
-                        Object n = comps.get("minecraft:item_name");
-                        if (n instanceof String) {
-                            compName = (String) n;
-                            explicitName = true;
-                        }
-                    }
-                    if (!explicitName && comps.containsKey("item_name")) {
-                        Object n = comps.get("item_name");
-                        if (n instanceof String) {
-                            compName = (String) n;
-                            explicitName = true;
-                        }
-                    }
-                    if (!explicitName && comps.containsKey("displayName")) {
-                        Object n = comps.get("displayName");
-                        if (n instanceof String) {
-                            compName = (String) n;
-                            explicitName = true;
-                        }
-                    }
-                }
-            }
-        }
+        String compName = extractDisplayName(entry);
         if (compName == null) {
-            // no custom name was given; use a human-friendly version of the
-            // material's name ("GOLD_INGOT" -> "Gold Ingot").
-            compName = prettifyMaterialName(stack.getType());
+            compName = prettifyMaterialName(mat);
         }
 
-        if (entry.nbt != null && !entry.nbt.isEmpty()) {
-            // Bukkit.getLogger().info("buildItem processing nbt keys=" + entry.nbt.keySet());
-        }
+        ensureComponentsInNBT(entry, compName);
+        applyItemMeta(stack, entry, compName);
 
-        // ensure the components tag exists in the config map so file reflects
-        // what we actually spawn. instead of putting only a custom_name key we
-        // copy the entire nbt map so operators can inspect and modify it
-        // directly using the in-game entity inspector.
-        if (entry.nbt == null) {
-            entry.nbt = new HashMap<>();
+        return stack;
+    }
+
+    private Material resolveMaterial(String item) {
+        Material mat = Material.matchMaterial(item.toUpperCase());
+        if (mat == null && item.contains(":")) {
+            mat = Material.matchMaterial(item.substring(item.indexOf(":") + 1).toUpperCase());
         }
+        return mat;
+    }
+
+    private String extractDisplayName(LootItem entry) {
+        if (entry.nbt == null) return null;
+        
+        String name = findInMap(entry.nbt, "item_name", "displayName");
+        if (name != null) return name;
+        
+        if (entry.nbt.get("components") instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> comps = (Map<String, Object>) entry.nbt.get("components");
+            return findInMap(comps, "minecraft:item_name", "item_name", "displayName");
+        }
+        return null;
+    }
+
+    private String findInMap(Map<String, Object> map, String... keys) {
+        for (String key : keys) {
+            Object val = map.get(key);
+            if (val instanceof String) return (String) val;
+        }
+        return null;
+    }
+
+    private void ensureComponentsInNBT(LootItem entry, String displayName) {
+        if (entry.nbt == null) entry.nbt = new HashMap<>();
         if (!entry.nbt.containsKey("components")) {
             Map<String, Object> comps = new HashMap<>(entry.nbt);
-            // make sure at least a name is present. only insert a custom name if
-            // the configuration actually specified one; otherwise we want the
-            // default game behaviour to show the item's normal display name.
-            if (!comps.containsKey("minecraft:custom_name") && explicitName) {
-                comps.put("minecraft:custom_name", compName);
+            if (!comps.containsKey("minecraft:custom_name") && extractDisplayName(entry) != null) {
+                comps.put("minecraft:custom_name", displayName);
             }
             entry.nbt.put("components", comps);
-            // Bukkit.getLogger().info("LootTableManager: injecting full components for " + entry.item + " -> " + comps);
             save();
         }
+    }
 
-        // set display name on meta unconditionally so the dropped item shows the
-        // name immediately and Paper will populate components automatically.
-        ItemMeta baseMeta = stack.getItemMeta();
-        if (baseMeta == null) {
-            baseMeta = Bukkit.getItemFactory().getItemMeta(stack.getType());
-        }
-        if (baseMeta != null && !baseMeta.hasItemName()) {
-            baseMeta.setItemName(compName);
-            stack.setItemMeta(baseMeta);
-        }
-
-        // try to honor arbitrary NBT via Bukkit's serializer; this will also
-        // apply the components tag we just added.
+    private void applyItemMeta(ItemStack stack, LootItem entry, String compName) {
         try {
-            ItemStack des = org.bukkit.inventory.ItemStack.deserialize(entry.nbt);
+            ItemStack des = ItemStack.deserialize(entry.nbt);
             if (des != null) {
                 des.setAmount(stack.getAmount());
                 stack = des;
             }
         } catch (Exception ignore) {
-            // ignore and continue with manual meta below
         }
 
         ItemMeta meta = stack.getItemMeta();
-        if (meta != null && entry.nbt != null) {
-            // Bukkit.getLogger()
-            //         .info("buildItem applying meta for " + entry.item + " with nbt keys=" + entry.nbt.keySet());
-            if (entry.nbt.containsKey("components") && entry.nbt.get("components") instanceof Map) {
-                // Bukkit.getLogger().info("buildItem processing components for " + entry.item);
-                Map<String, Object> components = (Map<String, Object>) entry.nbt.get("components");
-                if (components.containsKey("minecraft:item_name")) {
-                    // Bukkit.getLogger().info("buildItem found minecraft:item_name in components for " + entry.item);
-                    Object name = components.get("minecraft:item_name");
-                    // Bukkit.getLogger().info("buildItem setting custom name from minecraft:item_name: " + name);
-                    meta.setItemName((String) name);
-
-                }
+        if (meta != null) {
+            if (entry.nbt != null && entry.nbt.get("lore") instanceof List) {
+                @SuppressWarnings("unchecked")
+                List<String> lore = (List<String>) entry.nbt.get("lore");
+                meta.setLore(lore);
             }
-            if (entry.nbt.containsKey("lore")) {
-                Object lore = entry.nbt.get("lore");
-                if (lore instanceof List) {
-                    // noinspection unchecked
-                    meta.setLore((List<String>) lore);
-                }
-            }
+            meta.setItemName(compName);
             stack.setItemMeta(meta);
         }
-        // if no explicit name was given via NBT, enforce our human-readable
-        // default; the earlier meta manipulations may have left a blank or
-        // placeholder value after the deserializer ran.
-        // if (!explicitName && meta != null) {
-        meta.setItemName(compName);
-        stack.setItemMeta(meta);
-        // }
-        // Bukkit.getLogger().info("buildItem result stack=" + stack + " serialized=" + stack.serialize());
-        return stack;
     }
 
     /**
