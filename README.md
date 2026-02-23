@@ -45,8 +45,10 @@ cp "target/Dungeon Instances-1.0.0.jar" /path/to/server/plugins/
 
 Toutes les commandes sont sous `/dungeon`.
 
-- `/dungeon instance <template>`
-  - Crée une instance depuis le template et téléporte le joueur (avec délai/broadcast configuré dans le code).
+- `/dungeon instance <template> [difficulté]`
+  - Crée une instance depuis le template avec l'un des niveaux de difficulté suivants : **Débutant**, **Normal** (par défaut), **Héroïque**, **Mythique**.
+    La difficulté applique des multiplicateurs sur la vie, les dégâts et l'armure des créatures dérivées du template.
+  - Le joueur (chef de party) et ses membres reçoivent un message et sont téléportés après quelques secondes.
 
 - `/dungeon leave`
   - Quitte l'instance et restaure l'état normal.

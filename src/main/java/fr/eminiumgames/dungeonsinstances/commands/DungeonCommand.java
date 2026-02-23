@@ -14,6 +14,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import fr.eminiumgames.dungeonsinstances.DungeonInstances;
+import fr.eminiumgames.dungeonsinstances.managers.DungeonManager;
 import fr.eminiumgames.dungeonsinstances.managers.PartyManager;
 
 public class DungeonCommand implements CommandExecutor {
@@ -33,7 +34,7 @@ public class DungeonCommand implements CommandExecutor {
 
         if (args.length < 1) {
             player.sendMessage("Available subcommands:");
-            player.sendMessage("/dungeon instance <dungeon-name> - Create a dungeon instance");
+            player.sendMessage("/dungeon instance <dungeon-name> [difficulty] - Create a dungeon instance (default Normal)");
             return true;
         }
 
@@ -82,7 +83,7 @@ public class DungeonCommand implements CommandExecutor {
                             // would remain and display incorrectly without their NBT.
                             if (!saved.isEmpty()) {
                                 DungeonInstances.getInstance().getDungeonManager().clearMobs(worldRef);
-                                DungeonInstances.getInstance().getDungeonManager().spawnSavedMobs(templateRef, worldRef);
+                                DungeonInstances.getInstance().getDungeonManager().spawnSavedMobs(templateRef, worldRef, DungeonManager.Difficulty.NORMAL);
                             }
                         }, 20L); // 1 second delay
                         // teleport to configured spawn, not default world spawn
@@ -279,11 +280,18 @@ public class DungeonCommand implements CommandExecutor {
 
         if (subCommand.equals("instance")) {
             if (args.length < 2) {
-                player.sendMessage(PREFIX + ChatColor.YELLOW + "Utilisation: /dungeon instance <nom-du-donjon>");
+                player.sendMessage(PREFIX + ChatColor.YELLOW + "Utilisation: /dungeon instance <nom-du-donjon> [difficulté]");
+                player.sendMessage(PREFIX + ChatColor.GRAY + "Difficultés disponibles : Débutant, Normal, Héroïque, Mythique (par défaut Normal)");
                 return true;
             }
 
             String dungeonName = args[1];
+            // parse optional difficulty arg
+            DungeonManager.Difficulty difficulty = DungeonManager.Difficulty.NORMAL;
+            if (args.length >= 3) {
+                difficulty = DungeonManager.Difficulty.fromString(args[2]);
+            }
+
             PartyManager partyManager = DungeonInstances.getInstance().getPartyManager();
             PartyManager.Party party = partyManager.getPartyByPlayer(player);
 
@@ -298,12 +306,15 @@ public class DungeonCommand implements CommandExecutor {
                 return true;
             }
 
-            World instance = DungeonInstances.getInstance().getDungeonManager().createDungeonInstance(dungeonName,
-                    "instance_" + dungeonName + "_" + UUID.randomUUID());
+            World instance = DungeonInstances.getInstance().getDungeonManager()
+                    .createDungeonInstance(dungeonName,
+                            "instance_" + dungeonName + "_" + UUID.randomUUID(),
+                            difficulty);
             if (instance != null) {
+                String diffName = difficulty.toString();
                 partyManager.broadcastToParty(party,
                         PARTY_PREFIX + ChatColor.GREEN + "Le donjon " + ChatColor.LIGHT_PURPLE + dungeonName
-                                + ChatColor.GREEN + " a été lancé par " + ChatColor.AQUA + player.getName()
+                                + ChatColor.GREEN + " (" + diffName + ") a été lancé par " + ChatColor.AQUA + player.getName()
                                 + ChatColor.GREEN + " !");
                 partyManager.broadcastToParty(party,
                         PARTY_PREFIX + ChatColor.YELLOW + "Téléportation dans 10 secondes...");
@@ -384,7 +395,7 @@ public class DungeonCommand implements CommandExecutor {
 
                             member.teleport(spawnLocation);
                             member.sendMessage(PREFIX + ChatColor.GREEN + "Vous avez été téléporté dans le donjon : "
-                                    + ChatColor.LIGHT_PURPLE + dungeonName);
+                                    + ChatColor.LIGHT_PURPLE + dungeonName + ChatColor.GREEN + " (" + diffName + ")");
 
                             member.playSound(member.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 2.0f, 1.0f);
                         }
@@ -646,7 +657,7 @@ public class DungeonCommand implements CommandExecutor {
         if (!subCommand.equals("admin") && !subCommand.equals("instance") && !subCommand.equals("list")
                 && !subCommand.equals("leave") && !subCommand.equals("party")) {
             player.sendMessage("Unknown subcommand. Available subcommands:");
-            player.sendMessage("/dungeon instance <dungeon-name> - Create a dungeon instance");
+            player.sendMessage("/dungeon instance <dungeon-name> [difficulty] - Create a dungeon instance (default Normal)");
             return true;
         }
 

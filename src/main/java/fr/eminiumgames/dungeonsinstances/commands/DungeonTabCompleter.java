@@ -12,6 +12,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
+import fr.eminiumgames.dungeonsinstances.managers.DungeonManager;
+
 public class DungeonTabCompleter implements TabCompleter {
 
     private static final String DUNGEON_TEMPLATES_FOLDER = "templates-dungeons";
@@ -57,6 +59,22 @@ public class DungeonTabCompleter implements TabCompleter {
                     }
                 }
             }
+            return suggestions.stream()
+                    .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        // suggest difficulty level after dungeon name
+        if (args.length == 3 && args[0].equalsIgnoreCase("instance")) {
+            for (DungeonManager.Difficulty d : DungeonManager.Difficulty.values()) {
+                // suggest both the enum identifier (english, lowercase) and the
+                // human-friendly display name (which may contain accents)
+                suggestions.add(d.name().toLowerCase());
+                suggestions.add(d.toString());
+            }
+            return suggestions.stream()
+                    .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
+                    .collect(Collectors.toList());
         }
 
         if (args.length == 3 && args[0].equalsIgnoreCase("admin") &&

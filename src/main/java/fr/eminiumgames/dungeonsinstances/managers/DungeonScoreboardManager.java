@@ -91,12 +91,33 @@ public class DungeonScoreboardManager {
                         + " ✦");
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
-        // objective.getScore(ChatColor.DARK_GRAY + "───────────").setScore(score--);
-
         Set<UUID> members = party.getMembers();
-        int score = members.size() + 2;
+        int score = members.size() + 3; // +3 to account for difficulty line
 
         objective.getScore(ChatColor.GRAY + "Donjon: " + ChatColor.WHITE + dungeonName).setScore(score--);
+        // show difficulty on second row
+        DungeonManager.Difficulty diff = DungeonInstances.getInstance().getDungeonManager()
+                .getDifficultyForInstance(worldName);
+        ChatColor diffColor;
+        boolean bold = false;
+        switch (diff) {
+            case BEGINNER:
+                diffColor = ChatColor.GRAY;
+                break;
+            case NORMAL:
+                diffColor = ChatColor.WHITE;
+                break;
+            case HEROIC:
+                diffColor = ChatColor.YELLOW;
+                break;
+            case MYTHIC:
+            default:
+                diffColor = ChatColor.GOLD;
+                bold = true;
+                break;
+        }
+        String diffLine = diffColor + (bold ? ChatColor.BOLD.toString() : "") + diff.toString();
+        objective.getScore("Difficulté: " + diffLine).setScore(score--);
         // Header separator (uniform color)
         objective.getScore(ChatColor.DARK_GRAY + "────────────").setScore(score--);
 

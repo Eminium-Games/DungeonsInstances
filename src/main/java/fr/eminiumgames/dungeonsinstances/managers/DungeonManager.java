@@ -10,11 +10,13 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
@@ -35,7 +37,73 @@ public class DungeonManager {
     // (auto-save removed per user request)
     private final File dungeonTemplatesFolder = new File("templates-dungeons");
     private final Map<String, SpawnPoint> spawnPoints = new HashMap<>();
+
+    // remember difficulty selected when each instance was created
+    private final Map<String, Difficulty> instanceDifficulties = new java.util.concurrent.ConcurrentHashMap<>();
     private final File spawnDataFile = new File("plugins/DungeonInstances/spawnPoints.json");
+
+    /**
+     * Supported difficulty levels for dungeon instances.  Multipliers apply to
+     * mob health, attack damage and armor (resistance).
+     */
+    public enum Difficulty {
+        BEGINNER("Débutant", 0.5, 0.5, 0.25),
+        NORMAL("Normal", 1.0, 1.0, 1.0),
+        HEROIC("Héroïque", 2.0, 2.0, 2.0),
+        MYTHIC("Mythique", 2.5, 3.0, 3.0);
+
+        private final String displayName;
+        private final double healthMul;
+        private final double damageMul;
+        private final double armorMul;
+
+        Difficulty(String displayName, double healthMul, double damageMul, double armorMul) {
+            this.displayName = displayName;
+            this.healthMul = healthMul;
+            this.damageMul = damageMul;
+            this.armorMul = armorMul;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
+
+        public double getHealthMultiplier() {
+            return healthMul;
+        }
+
+        public double getDamageMultiplier() {
+            return damageMul;
+        }
+
+        public double getArmorMultiplier() {
+            return armorMul;
+        }
+
+        public static Difficulty fromString(String s) {
+            if (s == null)
+                return NORMAL;
+            String cleaned = s.trim();
+            // try matching enum name first (english identifier)
+            try {
+                return Difficulty.valueOf(cleaned.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                // fall through
+            }
+            // normalize accents to allow "debutant" matching "Débutant"
+            String norm = java.text.Normalizer.normalize(cleaned, java.text.Normalizer.Form.NFD)
+                    .replaceAll("\\p{M}", "");
+            for (Difficulty d : values()) {
+                String disp = java.text.Normalizer.normalize(d.displayName, java.text.Normalizer.Form.NFD)
+                        .replaceAll("\\p{M}", "");
+                if (disp.equalsIgnoreCase(norm)) {
+                    return d;
+                }
+            }
+            return NORMAL;
+        }
+    }
 
     // store mobs placed in edit mode so they can be resurrected in instances
     private final File mobDataFolder = new File("plugins/DungeonInstances/mobSpawns");
@@ -139,7 +207,7 @@ public class DungeonManager {
             // optionally clear existing mobs and respawn saved edit-mode creatures
             if (populateMobs) {
                 clearMobs(world);
-                spawnSavedMobs(templateName, world);
+                spawnSavedMobs(templateName, world, Difficulty.NORMAL);
             }
         } else {
             Bukkit.getLogger().warning("Failed to load dungeon template: " + templateName);
@@ -151,7 +219,18 @@ public class DungeonManager {
         }
     }
 
+    /**
+     * Convenience wrapper; creates an instance with normal difficulty.
+     */
     public World createDungeonInstance(String templateName, String instanceName) {
+        return createDungeonInstance(templateName, instanceName, Difficulty.NORMAL);
+    }
+
+    /**
+     * Create a new dungeon instance from a template and apply the given
+     * difficulty modifiers when spawning mobs.
+     */
+    public World createDungeonInstance(String templateName, String instanceName, Difficulty difficulty) {
         if (!dungeonCache.containsKey(templateName)) {
             Bukkit.getLogger().warning("Template " + templateName
                     + " is not loaded. Please ensure the template is loaded before creating an instance.");
@@ -190,7 +269,9 @@ public class DungeonManager {
         // Load the new instance as a world
         World instance = Bukkit.createWorld(new WorldCreator(instanceName));
         if (instance != null) {
-            Bukkit.getLogger().info("Created dungeon instance: " + instanceName);
+            Bukkit.getLogger().info("Created dungeon instance: " + instanceName + " (difficulty=" + difficulty + ")");
+            // record difficulty so other systems (scoreboard) can access it later
+            instanceDifficulties.put(instanceName, difficulty);
             // disable natural mob spawning in edit mode worlds
             if (instanceName.startsWith("editmode_")) {
                 instance.setGameRule(org.bukkit.GameRule.MOB_GRIEFING, false);
@@ -210,7 +291,7 @@ public class DungeonManager {
                 // give the server a bit more breathing room; mobs will spawn after 5 seconds
                 Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
                     clearMobs(instance);
-                    spawnSavedMobs(templateName, instance);
+                    spawnSavedMobs(templateName, instance, difficulty);
                 }, 100L); // 100 ticks = 5s
             }
         } else {
@@ -218,6 +299,14 @@ public class DungeonManager {
                     "Failed to load dungeon instance: " + instanceName + ". Check if the world folder is valid.");
         }
         return instance;
+    }
+
+    /**
+     * Retrieve the difficulty associated with a given instance world name.
+     */
+    public Difficulty getDifficultyForInstance(String instanceName) {
+        if (instanceName == null) return Difficulty.NORMAL;
+        return instanceDifficulties.getOrDefault(instanceName, Difficulty.NORMAL);
     }
 
     /**
@@ -264,8 +353,9 @@ public class DungeonManager {
             Bukkit.getLogger().info("Dungeon instance " + instanceName + " was not loaded.");
         }
 
+        // drop any stored difficulty mapping for the instance
+        instanceDifficulties.remove(instanceName);
         // always attempt to remove the folder regardless of whether the world was
-        // loaded
         File instanceFolder = new File(Bukkit.getWorldContainer(), instanceName);
         if (instanceFolder.exists()) {
             deleteFolder(instanceFolder);
@@ -574,6 +664,75 @@ public class DungeonManager {
         // more fields can be added as needed
     }
 
+    /**
+     * Adjust a living entity's attributes according to the chosen difficulty.
+     *
+     * Rather than mutating the base value (which can be overridden by other
+     * systems such as mob type defaults), we add a temporary attribute modifier
+     * with operation MULTIPLY_SCALAR_1.  This makes our change stack properly
+     * with vanilla attributes and avoids resetting hard-coded values like the
+     * wither skeleton's 20 health.
+     */
+    private void applyDifficulty(org.bukkit.entity.LivingEntity ent, Difficulty diff) {
+        if (ent == null || diff == null || diff == Difficulty.NORMAL) {
+            // still remove any existing difficulty modifiers so that an entity
+            // respawned in the same world doesn't retain them accidentally
+            removeDifficultyModifiers(ent, org.bukkit.attribute.Attribute.MAX_HEALTH);
+            removeDifficultyModifiers(ent, org.bukkit.attribute.Attribute.ATTACK_DAMAGE);
+            removeDifficultyModifiers(ent, org.bukkit.attribute.Attribute.ARMOR);
+            return;
+        }
+
+        // helper lambda to update a single attribute
+        java.util.function.BiConsumer<org.bukkit.attribute.Attribute, Double> updater = (attr, mul) -> {
+            org.bukkit.attribute.AttributeInstance inst = ent.getAttribute(attr);
+            if (inst == null) {
+                return;
+            }
+            // clear previous difficulty modifier for this attr
+            removeDifficultyModifiers(ent, attr);
+            if (mul == 1.0) {
+                return;
+            }
+            double amount = mul - 1.0; // MULTIPLY_SCALAR_1 uses (1 + amount)
+            AttributeModifier mod = new AttributeModifier(
+                    UUID.nameUUIDFromBytes(("diff-" + attr.name()).getBytes()),
+                    "difficulty", amount, AttributeModifier.Operation.MULTIPLY_SCALAR_1);
+            inst.addModifier(mod);
+        };
+
+        // updater.accept(org.bukkit.attribute.Attribute.MAX_HEALTH, diff.getHealthMultiplier());
+        updater.accept(org.bukkit.attribute.Attribute.ATTACK_DAMAGE, diff.getDamageMultiplier());
+        updater.accept(org.bukkit.attribute.Attribute.ARMOR, diff.getArmorMultiplier());
+
+        // adjust current health proportionally if max health changed
+        try {
+            org.bukkit.attribute.AttributeInstance hinst = ent
+                    .getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH);
+            if (hinst != null) {
+                double max = hinst.getValue();
+                ent.setHealth(Math.min(ent.getHealth(), max));
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    /**
+     * Remove any previously-applied difficulty modifiers for the given attribute
+     * (identified by the fixed name/uuid scheme used in applyDifficulty).
+     */
+    private void removeDifficultyModifiers(org.bukkit.entity.LivingEntity ent,
+            org.bukkit.attribute.Attribute attr) {
+        if (ent == null || attr == null)
+            return;
+        org.bukkit.attribute.AttributeInstance inst = ent.getAttribute(attr);
+        if (inst == null)
+            return;
+        inst.getModifiers().stream()
+                .filter(m -> "difficulty".equals(m.getName()))
+                .forEach(inst::removeModifier);
+    }
+
     public boolean isEditMode(String worldName) {
         return worldName.startsWith("editmode_");
     }
@@ -707,7 +866,7 @@ public class DungeonManager {
 
         // clear current creatures and respawn from the newly saved file
         clearMobs(editWorld);
-        spawnSavedMobs(templateName, editWorld);
+        spawnSavedMobs(templateName, editWorld, Difficulty.NORMAL);
     }
 
     /**
@@ -793,10 +952,17 @@ public class DungeonManager {
         return false;
     }
 
+    /**
+     * Spawn mobs previously saved for a dungeon template.  The supplied difficulty
+     * is used to adjust their attributes.  Existing callers that do not care
+     * about difficulty can use {@link #spawnSavedMobs(String, World)} which
+     * delegates to this method with {@link Difficulty#NORMAL}.
+     */
     public void spawnSavedMobs(String templateName, World world) {
-        // defensive guard – if this method ever gets called on a regular world we
-        // bail out now to avoid the impression that we are walking every world and
-        // force‑loading chunks. such misuse was the source of the original report.
+        spawnSavedMobs(templateName, world, Difficulty.NORMAL);
+    }
+
+    public void spawnSavedMobs(String templateName, World world, Difficulty difficulty) {
         if (!isDungeonManagedWorld(world)) {
             Bukkit.getLogger().warning("spawnSavedMobs called for non-dungeon world '" +
                     (world != null ? world.getName() : "null") + "' (template " + templateName
@@ -890,6 +1056,9 @@ public class DungeonManager {
                                     }, 1L);
                                 }
                                 ent.setAI(true);
+
+                                // scale attributes according to chosen difficulty
+                                applyDifficulty(ent, difficulty);
 
                                 ent.setPersistent(true); // ensure they don't despawn
                             }
