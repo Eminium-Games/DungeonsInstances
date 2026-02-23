@@ -38,7 +38,7 @@ cp "target/Dungeon Instances-1.0.0.jar" /path/to/server/plugins/
 3. Redémarrez le serveur.
 
 ## Structure des dossiers importants
-- `templates-dungeons/` : dossiers de templates (un dossier = un template de donjon).
+- `templates-dungeons/` : dossiers de templates (un dossier = un template de donjon). Si le dossier n'existe pas, le plugin créera automatiquement un répertoire et y installera le donjon par défaut *manaria* depuis son archive interne.
 - `plugins/DungeonInstances/spawnPoints.json` : points de spawn définis via `/dungeon admin setspawn`.
 
 ## Commandes

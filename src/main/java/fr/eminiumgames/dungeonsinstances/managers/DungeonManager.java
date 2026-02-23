@@ -42,7 +42,7 @@ public class DungeonManager {
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public DungeonManager() {
-        loadSpawnPoints();
+        reloadSpawnPoints();
     }
 
     /**
@@ -96,7 +96,10 @@ public class DungeonManager {
         }
     }
 
-    private void loadSpawnPoints() {
+    // load spawn points from disk; public so callers can refresh if the
+    // file is created/modified after the manager has been constructed.
+    public void reloadSpawnPoints() {
+        spawnPoints.clear();
         if (!spawnDataFile.exists()) {
             return;
         }
@@ -143,6 +146,7 @@ public class DungeonManager {
         }
 
         if (world != null) {
+            world.setGameRule(org.bukkit.GameRule.MOB_GRIEFING, false);
             world.setGameRule(org.bukkit.GameRule.DO_MOB_SPAWNING, false);
         }
     }
@@ -189,6 +193,7 @@ public class DungeonManager {
             Bukkit.getLogger().info("Created dungeon instance: " + instanceName);
             // disable natural mob spawning in edit mode worlds
             if (instanceName.startsWith("editmode_")) {
+                instance.setGameRule(org.bukkit.GameRule.MOB_GRIEFING, false);
                 instance.setGameRule(org.bukkit.GameRule.DO_MOB_SPAWNING, false);
                 // editor worlds no longer pre‑force every chunk. the old
                 // loadAndForceAllChunksAsync helper (removed long ago) was the
@@ -636,6 +641,7 @@ public class DungeonManager {
             forceLoadAllChunks(editWorld);
         }
         // disable natural spawning while we snapshot the world
+        editWorld.setGameRule(org.bukkit.GameRule.MOB_GRIEFING, false);
         editWorld.setGameRule(org.bukkit.GameRule.DO_MOB_SPAWNING, false);
         // save whatever entities are currently loaded; newly loaded chunks from
         // forceLoadAllChunks will be included above.

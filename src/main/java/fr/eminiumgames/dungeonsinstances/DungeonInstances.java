@@ -1,6 +1,7 @@
 package fr.eminiumgames.dungeonsinstances;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -28,6 +29,24 @@ public class DungeonInstances extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
+        // ensure we have a spawnPoints.json inside the plugin folder so that
+        // the manager can load saved spawn locations.  if the file is already
+        // present we leave it alone; otherwise copy the built‑in default from
+        // the JAR resources (src/main/resources/spawnPoints.json).
+        File spawnFile = new File(getDataFolder(), "spawnPoints.json");
+        if (!spawnFile.exists()) {
+            try (java.io.InputStream in = getResource("spawnPoints.json")) {
+                if (in != null) {
+                    spawnFile.getParentFile().mkdirs();
+                    java.nio.file.Files.copy(in, spawnFile.toPath());
+                    getLogger().info("Installed default spawnPoints.json into plugin folder.");
+                }
+            } catch (IOException e) {
+                getLogger().warning("Failed to copy default spawnPoints.json: " + e.getMessage());
+            }
+        }
+
+        // basic state needs to exist as early as possible
         instance = this;
         dungeonManager = new DungeonManager();
         partyManager = new PartyManager();
@@ -39,24 +58,32 @@ public class DungeonInstances extends JavaPlugin implements Listener {
         // Register commands and events here
         getCommand("dungeon").setExecutor(new DungeonCommand());
         getCommand("dungeon").setTabCompleter(new DungeonTabCompleter());
-
-        // Register event listener
         getServer().getPluginManager().registerEvents(this, this);
-
-        // schedule a task to continually enforce NoAI on edit‑mode worlds
-        Bukkit.getScheduler().runTaskTimer(this, () -> {
-            for (World w : Bukkit.getWorlds()) {
-                if (w.getName().startsWith("editmode_")) {
-                    // reuse manager helper so that persistence is also applied
-                    dungeonManager.setAIForWorld(w, false);
-                }
-            }
-        }, 0L, 20L); // every second
 
         // Load all dungeon templates at startup but do *not* populate mobs or
         // clear natural spawns.  this avoids touching the source worlds while
         // still making them available for instance creation later.
         File templatesFolder = new File(getDataFolder().getParentFile().getParentFile(), "templates-dungeons");
+
+        if (!templatesFolder.exists() || !templatesFolder.isDirectory()) {
+            // create parent directory if needed
+            if (!templatesFolder.exists()) {
+                templatesFolder.mkdirs();
+            }
+            getLogger().info("templates-dungeons folder missing; creating and installing default template(s).");
+            try {
+                installDefaultTemplates(templatesFolder);
+            } catch (IOException e) {
+                getLogger().severe("Failed to install default dungeon templates: " + e.getMessage());
+            }
+            // installing templates may have added a spawnPoints.json (template
+            // creator writes it after the plugin has started); reload so we
+            // pick up any new data immediately.
+            if (dungeonManager != null) {
+                dungeonManager.reloadSpawnPoints();
+            }
+        }
+
         if (templatesFolder.exists() && templatesFolder.isDirectory()) {
             File[] templateFolders = templatesFolder.listFiles(File::isDirectory);
             if (templateFolders != null) {
@@ -82,6 +109,16 @@ public class DungeonInstances extends JavaPlugin implements Listener {
             }
             getLogger().info("All dungeon instances have been purged on plugin reload.");
         }
+
+        // schedule a task to continually enforce NoAI on edit‑mode worlds
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            for (World w : Bukkit.getWorlds()) {
+                if (w.getName().startsWith("editmode_")) {
+                    // reuse manager helper so that persistence is also applied
+                    dungeonManager.setAIForWorld(w, false);
+                }
+            }
+        }, 0L, 20L); // every second
     }
 
     @Override
@@ -118,6 +155,49 @@ public class DungeonInstances extends JavaPlugin implements Listener {
             }
         }
         folder.delete();
+    }
+
+    /**
+     * When the templates folder is empty or missing we ship a small built‑in
+     * dungeon so that the plugin works out of the box. The world is stored
+     * inside the JAR as a zip under /default-templates/manaria.zip. This
+     * method unpacks every entry into the provided destination directory.
+     */
+    private void installDefaultTemplates(File templatesFolder) throws IOException {
+        // unzip manaria.zip into templatesFolder/manaria
+        try (java.io.InputStream in = getResource("default-templates/manaria.zip");
+                java.util.zip.ZipInputStream zip = new java.util.zip.ZipInputStream(in)) {
+            java.util.zip.ZipEntry entry;
+            while ((entry = zip.getNextEntry()) != null) {
+                File out = new File(templatesFolder, entry.getName().replaceFirst("^.*?manaria/", "manaria/"));
+                if (entry.isDirectory()) {
+                    out.mkdirs();
+                } else {
+                    out.getParentFile().mkdirs();
+                    try (java.io.FileOutputStream fos = new java.io.FileOutputStream(out)) {
+                        byte[] buf = new byte[8192];
+                        int len;
+                        while ((len = zip.read(buf)) > 0) {
+                            fos.write(buf, 0, len);
+                        }
+                    }
+                }
+                zip.closeEntry();
+            }
+        }
+
+        // also install default mob spawn data for the template
+        File mobDir = new File(getDataFolder(), "mobSpawns");
+        mobDir.mkdirs();
+        File manariaJsonDest = new File(mobDir, "manaria.json");
+        if (!manariaJsonDest.exists()) {
+            try (java.io.InputStream in = getResource("default-templates/manaria.json")) {
+                if (in != null) {
+                    java.nio.file.Files.copy(in, manariaJsonDest.toPath());
+                    getLogger().info("Installed default manaria.json into mobSpawns directory.");
+                }
+            }
+        }
     }
 
     @EventHandler

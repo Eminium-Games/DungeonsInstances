@@ -1,0 +1,2591 @@
+[
+  {
+    "uuid": "c0f41447-3838-4b89-a1a7-b3ff936bbf39",
+    "type": "WITHER_SKELETON",
+    "x": 9.5,
+    "y": 166.0,
+    "z": -135.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "86ed5e86-e3dd-4015-91a4-d2bad325aed3",
+    "type": "WITHER_SKELETON",
+    "x": -6.5,
+    "y": 97.0,
+    "z": -9.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "c661bcf9-d58c-418f-9501-e366e53d4a84",
+    "type": "WITHER_SKELETON",
+    "x": -21.5,
+    "y": 97.0,
+    "z": -21.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "1223b132-d531-4615-9178-66817dcb63a5",
+    "type": "WITHER_SKELETON",
+    "x": -26.5,
+    "y": 97.0,
+    "z": -21.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "02700755-ad36-466a-97fc-ebb6937d7dbd",
+    "type": "WITHER_SKELETON",
+    "x": -13.5,
+    "y": 97.0,
+    "z": -28.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "2488665c-13c2-48a4-bbd8-eac88c72226f",
+    "type": "WITHER_SKELETON",
+    "x": -11.5,
+    "y": 97.0,
+    "z": -38.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "61bf277d-1578-4a3a-97d0-df35d6701c3d",
+    "type": "WITHER_SKELETON",
+    "x": 1.5,
+    "y": 98.0,
+    "z": -28.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "8f102bfd-0952-43f4-86de-2af59415e93f",
+    "type": "WITHER_SKELETON",
+    "x": 1.5,
+    "y": 98.0,
+    "z": -33.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "0efeae1e-e027-4475-9a32-254e5e225607",
+    "type": "WITHER_SKELETON",
+    "x": 14.5,
+    "y": 99.0,
+    "z": -26.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "7ba9334b-b57e-4fed-944f-f8a4bd7356e8",
+    "type": "WITHER_SKELETON",
+    "x": 14.270240235187096,
+    "y": 100.0,
+    "z": -40.70137765097156,
+    "yaw": 76.072784,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "bac88a4e-d238-45c7-b568-fa37590becbd",
+    "type": "WITHER_SKELETON",
+    "x": 29.65491745282149,
+    "y": 102.0,
+    "z": -27.60889918691671,
+    "yaw": 330.428,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "cbabdbc1-2a58-4238-8303-016ac011c1bc",
+    "type": "WITHER_SKELETON",
+    "x": 24.5,
+    "y": 101.5,
+    "z": -21.0134633485086,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "211a7d2c-728f-48a1-b188-63dbc6c121ba",
+    "type": "WITHER_SKELETON",
+    "x": 27.5,
+    "y": 102.0,
+    "z": -13.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "28968c2d-74cd-479a-8d07-22304099ae19",
+    "type": "WITHER_SKELETON",
+    "x": 18.5,
+    "y": 105.0,
+    "z": -13.5,
+    "yaw": -40.281075,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "d4a576c2-d228-4a3d-be90-8b251a18b940",
+    "type": "WITHER_SKELETON",
+    "x": 3.5,
+    "y": 110.0,
+    "z": -8.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "c25f6b2e-a11d-4f5b-9a6c-eadf06195e79",
+    "type": "WITHER_SKELETON",
+    "x": -8.5,
+    "y": 113.0,
+    "z": -15.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "d59cdfb7-964b-4b83-9034-6a3080ba62a1",
+    "type": "WITHER_SKELETON",
+    "x": -16.5,
+    "y": 115.0,
+    "z": -8.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "24f2f691-db16-4435-a480-3ebd22d2d0a6",
+    "type": "WITHER_SKELETON",
+    "x": -32.38747507848429,
+    "y": 116.0,
+    "z": -9.387481632566596,
+    "yaw": 342.099,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "51591680-d3b0-469d-a7fc-201b9303389e",
+    "type": "WITHER_SKELETON",
+    "x": -22.5,
+    "y": 116.0,
+    "z": -22.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "d899ac74-8655-41fc-8445-27eda437198a",
+    "type": "WITHER_SKELETON",
+    "x": -19.810252810874108,
+    "y": 116.0,
+    "z": -28.70276580494495,
+    "yaw": 81.84766,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "1b960b9d-3d65-46e6-a8b3-9f92e47dc531",
+    "type": "WITHER_SKELETON",
+    "x": -22.5,
+    "y": 116.0,
+    "z": -33.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "c818240c-9737-4a29-803a-d6a188a54fcf",
+    "type": "WITHER_SKELETON",
+    "x": -30.5,
+    "y": 116.0,
+    "z": -34.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "e8482cb8-e1bc-4ef4-b627-0666d968fb64",
+    "type": "WITHER_SKELETON",
+    "x": -37.5,
+    "y": 116.0,
+    "z": -33.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "66b9e3e9-f9ec-4e6f-899b-6591f8d6d7ad",
+    "type": "WITHER_SKELETON",
+    "x": -41.5,
+    "y": 116.0,
+    "z": -29.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "e357d736-688e-40e9-9e12-204bbf68a25b",
+    "type": "WITHER_SKELETON",
+    "x": -44.5,
+    "y": 116.0,
+    "z": -21.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "234fb93e-c4ec-4c5a-8be6-2cb411456ab9",
+    "type": "WITHER_SKELETON",
+    "x": -41.5,
+    "y": 116.0,
+    "z": -15.39837499614805,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "d769ea44-c36a-46b5-9d50-d791a8c765b9",
+    "type": "WITHER_SKELETON",
+    "x": -30.97008712468051,
+    "y": 117.0,
+    "z": -55.029895866876615,
+    "yaw": 45.00052,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "f8df9177-e679-46d7-9b24-e4d2a2713c4f",
+    "type": "WITHER_SKELETON",
+    "x": -25.5,
+    "y": 117.0,
+    "z": -55.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "948d4668-7307-4afe-ae35-8cde07b900ff",
+    "type": "WITHER_SKELETON",
+    "x": 0.5,
+    "y": 118.0,
+    "z": -107.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "6beff61a-adc0-4885-a0e3-c58292bce88c",
+    "type": "WITHER_SKELETON",
+    "x": 6.5,
+    "y": 118.0,
+    "z": -107.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "ed5e3039-ac83-4a8d-ae72-ee76d55d5f12",
+    "type": "WITHER_SKELETON",
+    "x": 53.5,
+    "y": 124.0,
+    "z": -61.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "10499735-aad0-4fb4-8938-de5bfb3dd8df",
+    "type": "WITHER_SKELETON",
+    "x": 53.5,
+    "y": 124.0,
+    "z": -67.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "d8a12145-cf90-4b78-b1da-c5f319084aaa",
+    "type": "WITHER_SKELETON",
+    "x": 40.5,
+    "y": 128.0,
+    "z": -60.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "e8af1f8c-c877-4a18-bf9c-a906655f205c",
+    "type": "WITHER_SKELETON",
+    "x": 12.5,
+    "y": 135.0,
+    "z": -63.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "1864d293-9a5c-466c-a885-3a7d054e844f",
+    "type": "WITHER_SKELETON",
+    "x": 3.5,
+    "y": 166.0,
+    "z": -135.5,
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§4§lMana Guard\",\n  \"Health\": 20.0\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_chestplate",
+          "count": 1,
+          "schema_version": 1
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "DataVersion": 4440,
+          "id": "minecraft:iron_boots",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInMainHand": {
+          "DataVersion": 4440,
+          "id": "minecraft:golden_sword",
+          "count": 1,
+          "schema_version": 1
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "DataVersion": 4440,
+          "id": "minecraft:leather_leggings",
+          "count": 1,
+          "schema_version": 1
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 20.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 0.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.25,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 16.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  },
+  {
+    "uuid": "d912991f-2226-4fda-94c6-8d36b47c17c3",
+    "type": "WITHER",
+    "x": 6.5304656313798635,
+    "y": 166.72306949914963,
+    "z": -164.5408458752476,
+    "yaw": 336.8137,
+    "pitch": 0.0,
+    "nbt": "{\n  \"CustomName\": \"§5§lMana Devourer\",\n  \"Health\": 300.0,\n  \"CustomNameVisible\": true\n}",
+    "extra": {
+      "Equipment": {
+        "chestplate": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "helmet": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "boots": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "itemInMainHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "itemInOffHand": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        },
+        "leggings": {
+          "schema_version": 1,
+          "id": "minecraft:air",
+          "DataVersion": 4440
+        }
+      },
+      "Attributes": {
+        "MAX_HEALTH": 300.0,
+        "CAMERA_DISTANCE": 4.0,
+        "ARMOR": 4.0,
+        "FALL_DAMAGE_MULTIPLIER": 1.0,
+        "EXPLOSION_KNOCKBACK_RESISTANCE": 0.0,
+        "MOVEMENT_EFFICIENCY": 0.0,
+        "OXYGEN_BONUS": 0.0,
+        "GRAVITY": 0.08,
+        "MOVEMENT_SPEED": 0.6000000238418579,
+        "STEP_HEIGHT": 0.6,
+        "FOLLOW_RANGE": 40.0,
+        "ARMOR_TOUGHNESS": 0.0,
+        "WATER_MOVEMENT_EFFICIENCY": 0.0,
+        "MAX_ABSORPTION": 0.0,
+        "ATTACK_DAMAGE": 2.0,
+        "BURNING_TIME": 1.0,
+        "SAFE_FALL_DISTANCE": 3.0,
+        "WAYPOINT_TRANSMIT_RANGE": 0.0,
+        "FLYING_SPEED": 0.6000000238418579,
+        "JUMP_STRENGTH": 0.41999998688697815,
+        "SCALE": 1.0,
+        "KNOCKBACK_RESISTANCE": 0.0,
+        "ATTACK_KNOCKBACK": 0.0
+      }
+    }
+  }
+]
