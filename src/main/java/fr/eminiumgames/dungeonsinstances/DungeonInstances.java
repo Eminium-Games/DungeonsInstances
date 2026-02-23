@@ -26,6 +26,10 @@ public class DungeonInstances extends JavaPlugin implements Listener {
 
     // remember the world a player died in so respawn logic can use it
     private final java.util.Map<java.util.UUID, String> deathWorlds = new java.util.HashMap<>();
+    // players who have recently died and are about to respawn; used to avoid
+    // unloading the instance because they temporarily leave it during the
+    // vanilla respawn teleport.
+    private final java.util.Set<java.util.UUID> pendingRespawn = new java.util.HashSet<>();
 
     @Override
     public void onEnable() {
@@ -213,6 +217,11 @@ public class DungeonInstances extends JavaPlugin implements Listener {
 
         // Check if the previous world is an instance world
         if (previousWorld.getName().startsWith("instance_")) {
+            // if player was just respawning we may temporarily leave and come
+            // back, so skip unload until respawn handler finishes.
+            if (pendingRespawn.contains(player.getUniqueId())) {
+                return;
+            }
             // If the world is empty, unload and delete the instance
             if (previousWorld.getPlayers().isEmpty()) {
                 dungeonManager.unloadDungeonInstance(previousWorld.getName());
@@ -245,6 +254,9 @@ public class DungeonInstances extends JavaPlugin implements Listener {
             Bukkit.getLogger()
                     .info("[DungeonInstances] PlayerDeathEvent triggered in " + event.getEntity().getWorld().getName());
             deathWorlds.put(event.getEntity().getUniqueId(), event.getEntity().getWorld().getName());
+            // mark as pending so we don't unload the instance when the player
+            // is moved to the lobby automatically by vanilla.
+            pendingRespawn.add(event.getEntity().getUniqueId());
         }
     }
 
@@ -273,6 +285,9 @@ public class DungeonInstances extends JavaPlugin implements Listener {
         }
 
         if (worldName != null && worldName.startsWith("instance_")) {
+            // do NOT clear pendingRespawn just yet; another plugin may move the
+            // player after this event. we will remove the flag after the delayed
+            // teleport below.
             String remainder = worldName.substring("instance_".length());
             // template name is everything before the last underscore (uuid)
             int lastIdx = remainder.lastIndexOf('_');
@@ -285,16 +300,50 @@ public class DungeonInstances extends JavaPlugin implements Listener {
 
             org.bukkit.Location spawnLoc = dungeonManager.getSpawnLocation(templateName, world);
             Bukkit.getLogger().info("[DungeonInstances] computed spawnLoc = " + spawnLoc);
-
             if (spawnLoc == null) {
                 Bukkit.getLogger().warning("[DungeonInstances] no spawn point found for template '"
                         + templateName + "' in world " + worldName + "; using world spawn");
                 spawnLoc = world.getSpawnLocation();
             }
+            final org.bukkit.Location chosenLoc = spawnLoc;
 
             // force respawn location for the event
-            event.setRespawnLocation(spawnLoc);
-            Bukkit.getLogger().info("[DungeonInstances] setting respawn location to " + spawnLoc);
+            event.setRespawnLocation(chosenLoc);
+            Bukkit.getLogger().info("[DungeonInstances] setting respawn location to " + chosenLoc);
+
+            // schedule a small repeated task to ensure the player stays in the
+            // instance even if another plugin warps them out again. we'll try
+            // every tick for a short period and clear pendingRespawn only once the
+            // player is observed in the instance world.
+            final org.bukkit.scheduler.BukkitTask[] taskHolder = new org.bukkit.scheduler.BukkitTask[1];
+            taskHolder[0] = Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
+                int tries = 0;
+                int lastMessageSec = -1;
+
+                @Override
+                public void run() {
+                    if (!player.isOnline()) {
+                        pendingRespawn.remove(player.getUniqueId());
+                        taskHolder[0].cancel();
+                        return;
+                    }
+                    // always teleport every tick to our chosen location
+
+                    World pw = player.getWorld();
+                    if (pw != null && pw.getName().startsWith("instance_")) {
+                        pendingRespawn.remove(player.getUniqueId());
+                        taskHolder[0].cancel();
+                        return;
+                    }
+
+                    player.teleport(chosenLoc);
+
+                    if (++tries >= 200) { // after 10s stop trying
+                        pendingRespawn.remove(player.getUniqueId());
+                        taskHolder[0].cancel();
+                    }
+                }
+            }, 20L, 30L);
         }
     }
 }
