@@ -76,10 +76,11 @@ public class DungeonCommand implements CommandExecutor {
                         Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
                             java.util.List<fr.eminiumgames.dungeonsinstances.managers.DungeonManager.MobData> saved =
                                     DungeonInstances.getInstance().getDungeonManager().loadEditMobs(templateRef);
-                            boolean hasAny = worldRef.getEntities().stream()
-                                    .anyMatch(ent -> ent instanceof org.bukkit.entity.LivingEntity &&
-                                            !(ent instanceof Player));
-                            if (!saved.isEmpty() && !hasAny) {
+                            // always re‑populate from the saved file if any entries exist.  in
+                            // the past we only did this when the world contained no living
+                            // entities, which meant stale skeletons from an earlier session
+                            // would remain and display incorrectly without their NBT.
+                            if (!saved.isEmpty()) {
                                 DungeonInstances.getInstance().getDungeonManager().clearMobs(worldRef);
                                 DungeonInstances.getInstance().getDungeonManager().spawnSavedMobs(templateRef, worldRef);
                             }
@@ -198,13 +199,15 @@ public class DungeonCommand implements CommandExecutor {
                         if (minY != Double.NEGATIVE_INFINITY) {
                             player.sendMessage(PREFIX + ChatColor.GRAY + "Ignoring mobs below Y=" + minY + ".");
                         }
+                        // always force-load chunks on manual save so no mobs are missed
                         if (radius > 0 || minY != Double.NEGATIVE_INFINITY) {
                             DungeonInstances.getInstance().getDungeonManager().saveEditMobs(
                                     worldNameToSave.replace("editmode_", ""), w,
-                                    player.getLocation(), radius, minY);
+                                    true, player.getLocation(), radius, minY);
                         } else {
                             DungeonInstances.getInstance().getDungeonManager().saveEditMobs(
-                                    worldNameToSave.replace("editmode_", ""), w);
+                                    worldNameToSave.replace("editmode_", ""), w,
+                                    true, null, 0.0, Double.NEGATIVE_INFINITY);
                         }
                     }
 

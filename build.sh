@@ -47,9 +47,9 @@ fi
 
 build_project
 
-# Watch for file changes and rebuild automatically
-while true; do
-    inotifywait -e modify,create,delete -r src/ pom.xml build.sh > /dev/null 2>&1
-    build_project
-    echo "Waiting for file changes..."
-done
+# # Watch for file changes and rebuild automatically
+# while true; do
+#     inotifywait -e modify,create,delete -r src/ pom.xml build.sh > /dev/null 2>&1
+#     build_project
+#     echo "Waiting for file changes..."
+# done

@@ -15,6 +15,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import com.google.gson.Gson;
@@ -29,9 +30,9 @@ public class DungeonManager {
 
     private final Map<String, World> dungeonCache = new HashMap<>();
     // worlds currently undergoing async chunk forcing (by name)
-    private final java.util.Set<String> pendingChunkLoads = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
-    // scheduled task IDs for periodic auto-save of editmode worlds
-    private final Map<String,Integer> autoSaveTasks = new HashMap<>();
+    private final java.util.Set<String> pendingChunkLoads = java.util.Collections
+            .synchronizedSet(new java.util.HashSet<>());
+    // (auto-save removed per user request)
     private final File dungeonTemplatesFolder = new File("templates-dungeons");
     private final Map<String, SpawnPoint> spawnPoints = new HashMap<>();
     private final File spawnDataFile = new File("plugins/DungeonInstances/spawnPoints.json");
@@ -111,7 +112,7 @@ public class DungeonManager {
     }
 
     /**
-     * Load a template world into memory.  If <code>populateMobs</code> is true
+     * Load a template world into memory. If <code>populateMobs</code> is true
      * the routine will also clear natural spawns and respawn any saved mobs.
      * When called during plugin startup we pass false to avoid touching productive
      * template worlds; admins can load with mobs manually later if needed.
@@ -128,7 +129,7 @@ public class DungeonManager {
 
         // Load the template world into the cache
         World world = Bukkit.createWorld(new WorldCreator(templateName));
-        
+
         if (world != null) {
             dungeonCache.put(templateName, world);
             Bukkit.getLogger().info("Loaded dungeon template: " + templateName);
@@ -140,7 +141,7 @@ public class DungeonManager {
         } else {
             Bukkit.getLogger().warning("Failed to load dungeon template: " + templateName);
         }
-        
+
         if (world != null) {
             world.setGameRule(org.bukkit.GameRule.DO_MOB_SPAWNING, false);
         }
@@ -189,17 +190,17 @@ public class DungeonManager {
             // disable natural mob spawning in edit mode worlds
             if (instanceName.startsWith("editmode_")) {
                 instance.setGameRule(org.bukkit.GameRule.DO_MOB_SPAWNING, false);
-                // editor worlds no longer pre‑force every chunk.  the old
+                // editor worlds no longer pre‑force every chunk. the old
                 // loadAndForceAllChunksAsync helper (removed long ago) was the
                 // culprit when admins complained that the plugin was "loading all
                 // chunks in every world" during startup; we let chunks load on
                 // demand now.
-                String template = instanceName.substring("editmode_".length());
-                startAutoSave(instance, template);
+                // autosave feature disabled
             }
             // ensure all mobs in the new instance have AI enabled so they behave normally
             Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> setAIForWorld(instance, true), 1L);
-            // clear any existing creatures copied along with the world and respawn edit-mode mobs
+            // clear any existing creatures copied along with the world and respawn
+            // edit-mode mobs
             if (templateName != null) {
                 // give the server a bit more breathing room; mobs will spawn after 5 seconds
                 Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
@@ -216,8 +217,9 @@ public class DungeonManager {
 
     /**
      * Quickly set the AI flag for all living entities in the given world.
+     * 
      * @param world world to operate on (may be null)
-     * @param ai true to give entities AI, false to freeze them
+     * @param ai    true to give entities AI, false to freeze them
      */
     public void setAIForWorld(World world, boolean ai) {
         if (world == null) {
@@ -225,6 +227,9 @@ public class DungeonManager {
         }
         for (org.bukkit.entity.LivingEntity ent : world.getLivingEntities()) {
             ent.setAI(ai);
+
+            ent.setPersistent(true); // ensure they don't despawn
+            ((LivingEntity) ent).setRemoveWhenFarAway(false);
         }
     }
 
@@ -237,7 +242,7 @@ public class DungeonManager {
             return;
         }
         // cancel any auto-save task for this world
-        stopAutoSave(instanceName);
+        // autosave disabled; nothing to stop
 
         World world = Bukkit.getWorld(instanceName);
         if (world != null) {
@@ -254,7 +259,8 @@ public class DungeonManager {
             Bukkit.getLogger().info("Dungeon instance " + instanceName + " was not loaded.");
         }
 
-        // always attempt to remove the folder regardless of whether the world was loaded
+        // always attempt to remove the folder regardless of whether the world was
+        // loaded
         File instanceFolder = new File(Bukkit.getWorldContainer(), instanceName);
         if (instanceFolder.exists()) {
             deleteFolder(instanceFolder);
@@ -308,10 +314,43 @@ public class DungeonManager {
      * are spawned.
      */
     public void clearMobs(World world) {
-        if (world == null) return;
+        if (world == null)
+            return;
         for (org.bukkit.entity.Entity ent : world.getEntities()) {
             if (ent instanceof org.bukkit.entity.LivingEntity && !(ent instanceof Player)) {
                 ent.remove();
+            }
+        }
+    }
+
+    /**
+     * Force-load every chunk present in the world's region files. Used by
+     * explicit admin save operations to make sure mobs in unloaded chunks are
+     * also captured. Does not generate new chunks.
+     */
+    private void forceLoadAllChunks(World world) {
+        if (world == null)
+            return;
+        File regionFolder = new File(world.getWorldFolder(), "region");
+        if (!regionFolder.isDirectory())
+            return;
+        File[] regions = regionFolder.listFiles((f) -> f.getName().endsWith(".mca"));
+        if (regions == null)
+            return;
+        for (File reg : regions) {
+            String name = reg.getName(); // format r.<x>.<z>.mca
+            String[] parts = name.split("\\.");
+            if (parts.length >= 3) {
+                try {
+                    int rx = Integer.parseInt(parts[1]);
+                    int rz = Integer.parseInt(parts[2]);
+                    for (int cx = 0; cx < 32; cx++) {
+                        for (int cz = 0; cz < 32; cz++) {
+                            world.loadChunk(rx * 32 + cx, rz * 32 + cz, false);
+                        }
+                    }
+                } catch (NumberFormatException ignored) {
+                }
             }
         }
     }
@@ -341,8 +380,9 @@ public class DungeonManager {
                     }
                 }
                 saveMethodCache.put(nmsEntityClass, saveMethod);
-                Bukkit.getLogger().info("serializeEntityNBT: chosen method for " + nmsEntityClass.getSimpleName() + " = "
-                        + (saveMethod != null ? saveMethod.getName() : "<none>"));
+                Bukkit.getLogger()
+                        .info("serializeEntityNBT: chosen method for " + nmsEntityClass.getSimpleName() + " = "
+                                + (saveMethod != null ? saveMethod.getName() : "<none>"));
             }
 
             if (saveMethod != null) {
@@ -370,22 +410,27 @@ public class DungeonManager {
                 Bukkit.getLogger().info("serializeEntityNBT: raw nbt for " + e.getType() + " = " + serialized);
                 if ("{}".equals(serialized.trim())) {
                     // if nothing was captured, manually build a tiny map
-                    Map<String,Object> manual = new HashMap<>();
-                    if (e.getCustomName() != null) manual.put("CustomName", e.getCustomName());
-                    if (e.isCustomNameVisible()) manual.put("CustomNameVisible", true);
+                    Map<String, Object> manual = new HashMap<>();
+                    if (e.getCustomName() != null)
+                        manual.put("CustomName", e.getCustomName());
+                    if (e.isCustomNameVisible())
+                        manual.put("CustomNameVisible", true);
                     if (e instanceof org.bukkit.entity.Damageable) {
-                        manual.put("Health", ((org.bukkit.entity.Damageable)e).getHealth());
+                        manual.put("Health", ((org.bukkit.entity.Damageable) e).getHealth());
                     }
-                    if (e.isInvulnerable()) manual.put("Invulnerable", true);
+                    if (e.isInvulnerable())
+                        manual.put("Invulnerable", true);
                     if (!manual.isEmpty()) {
                         String jsonMap = gson.toJson(manual);
-                        Bukkit.getLogger().info("serializeEntityNBT: created manual map for " + e.getType() + " = " + jsonMap);
+                        Bukkit.getLogger()
+                                .info("serializeEntityNBT: created manual map for " + e.getType() + " = " + jsonMap);
                         return jsonMap;
                     }
                 }
                 return serialized;
             } else {
-                Bukkit.getLogger().warning("No suitable NBT save method for " + nmsEntityClass.getName() + "; falling back to Bukkit serialization.");
+                Bukkit.getLogger().warning("No suitable NBT save method for " + nmsEntityClass.getName()
+                        + "; falling back to Bukkit serialization.");
             }
         } catch (Exception ex) {
             Bukkit.getLogger().warning("Reflection NBT failed for " + e + ": " + ex.getMessage());
@@ -407,35 +452,43 @@ public class DungeonManager {
     }
 
     private void applyEntityNBT(org.bukkit.entity.Entity e, String nbt) {
-        // quick heuristics: if the string contains quotes it is likely the JSON map fallback
-        if (nbt != null && nbt.contains("\"") && nbt.trim().startsWith("{")) {
-            try {
-                Map<String, Object> map = gson.fromJson(nbt, new TypeToken<Map<String, Object>>() {}.getType());
-                applySerializedMap(e, map);
-                return;
-            } catch (Exception ex) {
-                Bukkit.getLogger().warning("Failed to apply JSON map to " + e + ": " + ex.getMessage());
-                // fall through to NBT attempt
-            }
+        if (nbt == null) {
+            return;
         }
 
+        // try raw Mojangson NBT first – this covers the vast majority of cases
+        // and avoids accidentally interpreting valid NBT as a JSON map. if
+        // parsing succeeds we return immediately; otherwise fall through to the
+        // map-based fallback.
         try {
             Class<?> nbtClass = Class.forName("net.minecraft.nbt.NBTTagCompound");
             Class<?> parserClass = Class.forName("net.minecraft.nbt.MojangsonParser");
             java.lang.reflect.Method parseMethod = parserClass.getMethod("parse", String.class);
             Object tag = parseMethod.invoke(null, nbt);
             Object craftEntity = e.getClass().getMethod("getHandle").invoke(e);
-            Class<?> nmsEntityClass = craftEntity.getClass();
-            nmsEntityClass.getMethod("load", nbtClass).invoke(craftEntity, tag);
+            craftEntity.getClass().getMethod("load", nbtClass).invoke(craftEntity, tag);
+            // applied full NBT successfully
+            return;
+        } catch (Exception ignored) {
+            // parsing failed, try fallback below
+        }
+
+        // fallback to the limited JSON map format we sometimes write when
+        // reflection-based serialization couldn’t produce real NBT.
+        try {
+            Map<String, Object> map = gson.fromJson(nbt, new TypeToken<Map<String, Object>>() {
+            }.getType());
+            applySerializedMap(e, map);
         } catch (Exception ex) {
-            Bukkit.getLogger().warning("Couldn't apply NBT to " + e + ": " + ex.getMessage());
+            Bukkit.getLogger().warning("Failed to apply JSON map to " + e + ": " + ex.getMessage());
         }
     }
 
     // apply a Bukkit serialized map back to an entity; handles a few common keys
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private void applySerializedMap(org.bukkit.entity.Entity e, Map<String, Object> map) {
-        if (map == null || map.isEmpty()) return;
+        if (map == null || map.isEmpty())
+            return;
         // custom name
         if (map.containsKey("CustomName")) {
             e.setCustomName((String) map.get("CustomName"));
@@ -452,31 +505,38 @@ public class DungeonManager {
         if (map.containsKey("Invulnerable")) {
             e.setInvulnerable(Boolean.TRUE.equals(map.get("Invulnerable")));
         }
+
+        e.setPersistent(false);
+        ((LivingEntity) e).setRemoveWhenFarAway(false);
         // equipment
         if (map.containsKey("Equipment") && e instanceof org.bukkit.entity.LivingEntity) {
             Object eqObj = map.get("Equipment");
             if (eqObj instanceof Map) {
                 org.bukkit.inventory.EntityEquipment equipment = ((org.bukkit.entity.LivingEntity) e).getEquipment();
                 if (equipment != null) {
-                    Map<?,?> eqMap = (Map<?,?>) eqObj;
+                    Map<?, ?> eqMap = (Map<?, ?>) eqObj;
                     try {
                         if (eqMap.containsKey("helmet")) {
                             equipment.setHelmet(org.bukkit.inventory.ItemStack.deserialize((Map) eqMap.get("helmet")));
                         }
                         if (eqMap.containsKey("chestplate")) {
-                            equipment.setChestplate(org.bukkit.inventory.ItemStack.deserialize((Map) eqMap.get("chestplate")));
+                            equipment.setChestplate(
+                                    org.bukkit.inventory.ItemStack.deserialize((Map) eqMap.get("chestplate")));
                         }
                         if (eqMap.containsKey("leggings")) {
-                            equipment.setLeggings(org.bukkit.inventory.ItemStack.deserialize((Map) eqMap.get("leggings")));
+                            equipment.setLeggings(
+                                    org.bukkit.inventory.ItemStack.deserialize((Map) eqMap.get("leggings")));
                         }
                         if (eqMap.containsKey("boots")) {
                             equipment.setBoots(org.bukkit.inventory.ItemStack.deserialize((Map) eqMap.get("boots")));
                         }
                         if (eqMap.containsKey("itemInMainHand")) {
-                            equipment.setItemInMainHand(org.bukkit.inventory.ItemStack.deserialize((Map) eqMap.get("itemInMainHand")));
+                            equipment.setItemInMainHand(
+                                    org.bukkit.inventory.ItemStack.deserialize((Map) eqMap.get("itemInMainHand")));
                         }
                         if (eqMap.containsKey("itemInOffHand")) {
-                            equipment.setItemInOffHand(org.bukkit.inventory.ItemStack.deserialize((Map) eqMap.get("itemInOffHand")));
+                            equipment.setItemInOffHand(
+                                    org.bukkit.inventory.ItemStack.deserialize((Map) eqMap.get("itemInOffHand")));
                         }
                     } catch (Exception ex) {
                         Bukkit.getLogger().warning("Failed to apply equipment map: " + ex.getMessage());
@@ -488,13 +548,14 @@ public class DungeonManager {
         if (map.containsKey("Attributes") && e instanceof org.bukkit.entity.LivingEntity) {
             Object attrObj = map.get("Attributes");
             if (attrObj instanceof Map) {
-                Map<?,?> attrs = (Map<?,?>) attrObj;
+                Map<?, ?> attrs = (Map<?, ?>) attrObj;
                 org.bukkit.entity.LivingEntity le = (org.bukkit.entity.LivingEntity) e;
-                for (Map.Entry<?,?> entry : attrs.entrySet()) {
+                for (Map.Entry<?, ?> entry : attrs.entrySet()) {
                     if (entry.getKey() instanceof String && entry.getValue() instanceof Number) {
                         try {
                             @SuppressWarnings("deprecation")
-                            org.bukkit.attribute.Attribute attr = org.bukkit.attribute.Attribute.valueOf((String) entry.getKey());
+                            org.bukkit.attribute.Attribute attr = org.bukkit.attribute.Attribute
+                                    .valueOf((String) entry.getKey());
                             org.bukkit.attribute.AttributeInstance ai = le.getAttribute(attr);
                             if (ai != null) {
                                 ai.setBaseValue(((Number) entry.getValue()).doubleValue());
@@ -513,58 +574,15 @@ public class DungeonManager {
     }
 
     /**
-     * Start a repeating task that saves all mobs in the given edit-mode world
-     * back to the template file every minute.  Has no effect if already running.
-     */
-    public void startAutoSave(World world, String templateName) {
-        if (world == null || templateName == null) return;
-        String name = world.getName();
-        if (autoSaveTasks.containsKey(name)) {
-            return;
-        }
-        int task = Bukkit.getScheduler().scheduleSyncRepeatingTask(DungeonInstances.getInstance(), () -> {
-            // always attempt save; method checks for null world
-            saveEditMobs(templateName, world);
-        }, 1200L, 1200L); // 1200 ticks = 60s
-        autoSaveTasks.put(name, task);
-    }
-
-    public void stopAutoSave(String worldName) {
-        Integer id = autoSaveTasks.remove(worldName);
-        if (id != null) {
-            Bukkit.getScheduler().cancelTask(id);
-        }
-    }
-
-    /**
-     * Return true if the server is currently running significantly below 20TPS.
-     * Used to throttle our asynchronous loops when the server is already overloaded.
-     */
-    private boolean isServerLagging() {
-        try {
-            Object server = Bukkit.getServer();
-            java.lang.reflect.Method m = server.getClass().getMethod("getTPS");
-            Object result = m.invoke(server);
-            if (result instanceof double[]) {
-                double[] tps = (double[]) result;
-                return tps.length > 0 && tps[0] < 18.0;
-            }
-        } catch (Exception ex) {
-            // reflection failed or method not present: just assume not lagging
-        }
-        return false;
-    }
-
-    /**
      * Data structure representing a placed mob.
      */
     public static class MobData {
-        public String uuid;        // original entity UUID (for deduplication)
+        public String uuid; // original entity UUID (for deduplication)
         public String type;
         public double x, y, z;
         public float yaw, pitch;
-        public String nbt;        // full NBT string excluding UUID
-        public Map<String,Object> extra;   // optional additional data (equipment, attributes, etc.)
+        public String nbt; // full NBT string excluding UUID
+        public Map<String, Object> extra; // optional additional data (equipment, attributes, etc.)
     }
 
     private File mobFileFor(String templateName) {
@@ -574,46 +592,63 @@ public class DungeonManager {
         return new File(mobDataFolder, templateName + ".json");
     }
 
+    /**
+     * Simplest entry point – does not filter and does not force-load chunks.
+     * Used by auto-save tasks. Admins should call the overload that allows
+     * forcing all chunks to be loaded so nothing is missed.
+     */
     public void saveEditMobs(String templateName, World editWorld) {
-        // legacy entry point keeps previous behaviour (no filtering)
-        saveEditMobs(templateName, editWorld, null, 0.0);
+        // auto-save case: do not force chunks
+        saveEditMobs(templateName, editWorld, false, null, 0.0, Double.NEGATIVE_INFINITY);
     }
 
     /**
-     * Save mobs in an edit-world back to the template file.  If a centre and
+     * Save mobs in an edit-world back to the template file. If a centre and
      * radius are supplied only mobs whose location is within the circle will be
-     * recorded.  This allows the admin to only persist the creatures they
+     * recorded. This allows the admin to only persist the creatures they
      * spawned nearby while ignoring random natural spawns happening elsewhere.
      */
     public void saveEditMobs(String templateName, World editWorld, Location centre, double radius) {
-        // convenience wrapper when only radius/centre filter is desired
-        saveEditMobs(templateName, editWorld, centre, radius, Double.NEGATIVE_INFINITY);
+        // convenience wrapper when only radius/centre filter is desired; do
+        // not force-chunks by default
+        saveEditMobs(templateName, editWorld, false, centre, radius, Double.NEGATIVE_INFINITY);
     }
 
     /**
-     * Save mobs in an edit-world back to the template file.  If a centre and
+     * Save mobs in an edit-world back to the template file. If a centre and
      * radius are supplied only mobs whose location is within the circle will be
-     * recorded.  If minY is finite, creatures below that height are ignored.
+     * recorded. If minY is finite, creatures below that height are ignored.
      * These filters can be combined (both may apply).
      */
-    public void saveEditMobs(String templateName, World editWorld, Location centre, double radius, double minY) {
+    /**
+     * Main saving routine. If <code>forceLoadChunks</code> is true we will
+     * pre-load every chunk in the world (reading region files) before taking
+     * the snapshot; this makes manual admin saves capture mobs in unloaded
+     * areas as well. Calling with forceLoadChunks=false replicates the
+     * old behaviour where only loaded entities are saved.
+     */
+    public void saveEditMobs(String templateName, World editWorld, boolean forceLoadChunks,
+            Location centre, double radius, double minY) {
         if (editWorld == null) {
             return;
         }
+        if (forceLoadChunks) {
+            forceLoadAllChunks(editWorld);
+        }
         // disable natural spawning while we snapshot the world
         editWorld.setGameRule(org.bukkit.GameRule.DO_MOB_SPAWNING, false);
-        // for stability we no longer attempt to enumerate every region chunk;
-        // simply save whatever entities are currently loaded.  unloaded chunks
-        // will be captured when they become loaded (via auto-save/creature spawn)
+        // save whatever entities are currently loaded; newly loaded chunks from
+        // forceLoadAllChunks will be included above.
         doSaveEditMobs(templateName, editWorld, centre, radius, minY);
     }
 
     private void doSaveEditMobs(String templateName, World editWorld, Location centre, double radius, double minY) {
-        if (editWorld == null) return;
+        if (editWorld == null)
+            return;
 
         File out = mobFileFor(templateName);
         try (FileWriter fw = new FileWriter(out);
-             com.google.gson.stream.JsonWriter jw = new com.google.gson.stream.JsonWriter(fw)) {
+                com.google.gson.stream.JsonWriter jw = new com.google.gson.stream.JsonWriter(fw)) {
             jw.setIndent("  ");
             jw.beginArray();
             for (org.bukkit.entity.Entity e : editWorld.getEntities()) {
@@ -635,11 +670,20 @@ public class DungeonManager {
                 d.uuid = e.getUniqueId().toString();
                 d.type = e.getType().name();
                 Location loc = e.getLocation();
-                d.x = loc.getX(); d.y = loc.getY(); d.z = loc.getZ();
-                d.yaw = loc.getYaw(); d.pitch = loc.getPitch();
+                d.x = loc.getX();
+                d.y = loc.getY();
+                d.z = loc.getZ();
+
+                // If y <= -45, ignore the mob
+                if (d.y <= -45) {
+                    continue;
+                }
+
+                d.yaw = loc.getYaw();
+                d.pitch = loc.getPitch();
                 d.nbt = serializeEntityNBT(e);
 
-                Map<String,Object> extras = gatherExtras(le);
+                Map<String, Object> extras = gatherExtras(le);
                 if (!extras.isEmpty()) {
                     d.extra = extras;
                 }
@@ -664,12 +708,12 @@ public class DungeonManager {
      * Helper that collects equipment/attributes metadata from a living entity.
      */
     @SuppressWarnings("deprecation")
-    private Map<String,Object> gatherExtras(org.bukkit.entity.LivingEntity le) {
-        Map<String,Object> extras = new HashMap<>();
+    private Map<String, Object> gatherExtras(org.bukkit.entity.LivingEntity le) {
+        Map<String, Object> extras = new HashMap<>();
         // equipment
         org.bukkit.inventory.EntityEquipment eq = le.getEquipment();
         if (eq != null) {
-            Map<String,Object> equipMap = new HashMap<>();
+            Map<String, Object> equipMap = new HashMap<>();
             if (eq.getHelmet() != null) {
                 equipMap.put("helmet", eq.getHelmet().serialize());
             }
@@ -693,7 +737,7 @@ public class DungeonManager {
             }
         }
         // attributes
-        Map<String,Object> attrMap = new HashMap<>();
+        Map<String, Object> attrMap = new HashMap<>();
         for (org.bukkit.attribute.Attribute attr : org.bukkit.attribute.Attribute.values()) {
             org.bukkit.attribute.AttributeInstance ai = le.getAttribute(attr);
             if (ai != null) {
@@ -706,13 +750,13 @@ public class DungeonManager {
         return extras;
     }
 
-
-
     public java.util.List<MobData> loadEditMobs(String templateName) {
         File f = mobFileFor(templateName);
-        if (!f.exists()) return java.util.Collections.emptyList();
+        if (!f.exists())
+            return java.util.Collections.emptyList();
         try (java.io.FileReader r = new java.io.FileReader(f)) {
-            java.util.List<MobData> l = gson.fromJson(r, new TypeToken<java.util.List<MobData>>(){}.getType());
+            java.util.List<MobData> l = gson.fromJson(r, new TypeToken<java.util.List<MobData>>() {
+            }.getType());
             return l != null ? l : java.util.Collections.emptyList();
         } catch (IOException ex) {
             Bukkit.getLogger().severe("Failed to load edit mobs: " + ex.getMessage());
@@ -726,10 +770,10 @@ public class DungeonManager {
      * a large hitch or crash.
      */
     // helper used by various routines to ensure we only operate on worlds that
-    // are under the plugin's control.  previously a poorly‑placed call to
+    // are under the plugin's control. previously a poorly‑placed call to
     // spawnSavedMobs during startup could be blamed for "loading every chunk in
     // every world" when in reality the method was never meant to touch the
-    // main server worlds.  we now sanity‑check the world name before proceeding.
+    // main server worlds. we now sanity‑check the world name before proceeding.
     private boolean isDungeonManagedWorld(World world) {
         if (world == null)
             return false;
@@ -746,10 +790,11 @@ public class DungeonManager {
     public void spawnSavedMobs(String templateName, World world) {
         // defensive guard – if this method ever gets called on a regular world we
         // bail out now to avoid the impression that we are walking every world and
-        // force‑loading chunks.  such misuse was the source of the original report.
+        // force‑loading chunks. such misuse was the source of the original report.
         if (!isDungeonManagedWorld(world)) {
             Bukkit.getLogger().warning("spawnSavedMobs called for non-dungeon world '" +
-                    (world != null ? world.getName() : "null") + "' (template " + templateName + "); skipping to avoid loading chunks.");
+                    (world != null ? world.getName() : "null") + "' (template " + templateName
+                    + "); skipping to avoid loading chunks.");
             return;
         }
 
@@ -763,6 +808,8 @@ public class DungeonManager {
             com.google.gson.stream.JsonReader jr = new com.google.gson.stream.JsonReader(fr);
             jr.beginArray();
             final int[] taskId = new int[1];
+            final java.util.concurrent.atomic.AtomicInteger readCount = new java.util.concurrent.atomic.AtomicInteger(
+                    0);
             taskId[0] = Bukkit.getScheduler().scheduleSyncRepeatingTask(DungeonInstances.getInstance(), new Runnable() {
                 @Override
                 public void run() {
@@ -770,21 +817,35 @@ public class DungeonManager {
                         if (!jr.hasNext()) {
                             jr.endArray();
                             jr.close();
-                            fr.close(); 
+                            fr.close();
                             Bukkit.getScheduler().cancelTask(taskId[0]);
                             return;
                         }
                         MobData d = gson.fromJson(jr, MobData.class);
-                        // skip if same uuid already present
-                        if (d.uuid != null) {
-                            try {
-                                org.bukkit.entity.Entity existing = Bukkit.getEntity(java.util.UUID.fromString(d.uuid));
-                                if (existing != null) {
-                                    return;
-                                }
-                            } catch (IllegalArgumentException ignored) {
-                            }
-                        }
+                        int idx = readCount.getAndIncrement();
+                        Bukkit.getLogger()
+                                .info("spawnSavedMobs: entry #" + idx + " type=" + d.type + " uuid=" + d.uuid);
+                        // skip if an entity with the same uuid already exists in *this* world
+                        // if (d.uuid != null) {
+                        // try {
+                        // java.util.UUID orig = java.util.UUID.fromString(d.uuid);
+                        // // world.getEntity(UUID) does not exist; scan current world entities
+                        // org.bukkit.entity.Entity existing = null;
+                        // for (org.bukkit.entity.Entity e : world.getEntities()) {
+                        // if (orig.equals(e.getUniqueId())) {
+                        // existing = e;
+                        // break;
+                        // }
+                        // }
+                        // if (existing != null) {
+                        // Bukkit.getLogger().info("spawnSavedMobs: skipping mob " + d.type + " with
+                        // uuid " + d.uuid + " because it already exists in world " + world.getName());
+                        // return;
+                        // }
+                        // } catch (IllegalArgumentException ignored) {
+                        // // malformed uuid; we'll just try to spawn normally
+                        // }
+                        // }
                         try {
                             org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.valueOf(d.type);
                             Location loc = new Location(world, d.x, d.y, d.z, d.yaw, d.pitch);
@@ -792,8 +853,18 @@ public class DungeonManager {
                                 world.loadChunk(loc.getBlockX() >> 4, loc.getBlockZ() >> 4);
                             }
                             org.bukkit.entity.Entity spawned = world.spawnEntity(loc, type);
-                            if (spawned instanceof org.bukkit.entity.LivingEntity) {
+                            if (spawned == null) {
+                                Bukkit.getLogger().warning(
+                                        "spawnSavedMobs: spawnEntity returned null for " + d.type + " at " + loc);
+                            } else if (spawned instanceof org.bukkit.entity.LivingEntity) {
                                 org.bukkit.entity.LivingEntity ent = (org.bukkit.entity.LivingEntity) spawned;
+                                // ensure the entity is flagged persistent so vanilla will not
+                                // despawn it when no players are nearby
+                                try {
+                                    ent.setPersistent(true);
+                                } catch (NoSuchMethodError | NoClassDefFoundError ignore) {
+                                    // older API versions may not have this method; it’s okay
+                                }
                                 // restore original UUID if possible (for deduplication/persistence)
                                 if (d.uuid != null) {
                                     try {
@@ -813,6 +884,8 @@ public class DungeonManager {
                                     }, 1L);
                                 }
                                 ent.setAI(true);
+
+                                ent.setPersistent(true); // ensure they don't despawn
                             }
                         } catch (IllegalArgumentException ignored) {
                             Bukkit.getLogger().warning("Unknown mob type when spawning saved mob: " + d.type);
@@ -820,6 +893,10 @@ public class DungeonManager {
                     } catch (IOException ioe) {
                         Bukkit.getLogger().severe("Error reading mob data while spawning: " + ioe.getMessage());
                         Bukkit.getScheduler().cancelTask(taskId[0]);
+                    } catch (Exception ex) {
+                        Bukkit.getLogger().severe(
+                                "Unexpected error in spawnSavedMobs loop for template " + templateName + ": " + ex);
+                        // continue with next entry instead of cancelling task
                     }
                 }
             }, 0L, 1L);

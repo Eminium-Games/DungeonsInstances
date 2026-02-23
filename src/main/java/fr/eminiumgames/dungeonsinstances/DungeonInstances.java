@@ -4,7 +4,6 @@ import java.io.File;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -48,11 +47,8 @@ public class DungeonInstances extends JavaPlugin implements Listener {
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             for (World w : Bukkit.getWorlds()) {
                 if (w.getName().startsWith("editmode_")) {
-                    for (LivingEntity ent : w.getLivingEntities()) {
-                        if (ent.hasAI()) {
-                            ent.setAI(false);
-                        }
-                    }
+                    // reuse manager helper so that persistence is also applied
+                    dungeonManager.setAIForWorld(w, false);
                 }
             }
         }, 0L, 20L); // every second
@@ -72,15 +68,7 @@ public class DungeonInstances extends JavaPlugin implements Listener {
             getLogger().warning(
                     "The templates-dungeons folder does not exist or is not a directory. No dungeon templates were loaded.");
         }
-        // only inspect worlds that were explicitly created by this plugin.
-        // we do *not* iterate every world looking for mobs or chunks; the
-        // prefix check prevents accidental work on vanilla or unrelated worlds.
-        for (World w : Bukkit.getWorlds()) {
-            if (w.getName().startsWith("editmode_")) {
-                String tpl = w.getName().substring("editmode_".length());
-                dungeonManager.startAutoSave(w, tpl);
-            }
-        }
+        // auto-save has been disabled; no per-world tasks need to be started
 
         // Purge all instance worlds on plugin reload
         File worldContainer = Bukkit.getWorldContainer();
