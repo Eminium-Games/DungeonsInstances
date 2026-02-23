@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -352,14 +353,53 @@ public class LootTableManager {
         }
     }
 
-    private void applyItemMeta(ItemStack stack, LootItem entry, String compName) {
+    /**
+     * Use NMS to apply the provided NBT map directly onto the given stack.
+     * The map may contain a `components` submap (or any other tags); they are
+     * merged verbatim into the NMS ItemStack's tag so the game processes them
+     * exactly as if they were read from an actual ItemStack nbt blob.
+     */
+    private ItemStack applyNmsComponents(ItemStack stack, Map<String, Object> nbtMap) {
+        if (nbtMap == null || nbtMap.isEmpty()) return stack;
         try {
-            ItemStack des = ItemStack.deserialize(entry.nbt);
-            if (des != null) {
-                des.setAmount(stack.getAmount());
-                stack = des;
+            // reflection to avoid compile-time NMS dependency
+            Class<?> craftStackClass = Class.forName("org.bukkit.craftbukkit.v1_21_R2.inventory.CraftItemStack");
+            Method toNms = craftStackClass.getMethod("asNMSCopy", ItemStack.class);
+            Object nms = toNms.invoke(null, stack);
+
+            Class<?> nmsStackClass = nms.getClass();
+            Method hasTag = nmsStackClass.getMethod("hasTag");
+            Method getTag = nmsStackClass.getMethod("getTag");
+            Class<?> compoundTagClass = Class.forName("net.minecraft.nbt.CompoundTag");
+            Object tag = (Boolean) hasTag.invoke(nms) ? getTag.invoke(nms) : compoundTagClass.getConstructor().newInstance();
+
+            Class<?> tagClass = Class.forName("net.minecraft.nbt.Tag");
+            Method aMethod = tagClass.getMethod("a", Object.class);
+
+            // merge provided map entries into tag
+            for (Map.Entry<String, Object> e : nbtMap.entrySet()) {
+                Object valueTag = aMethod.invoke(null, e.getValue());
+                Method put = tag.getClass().getMethod("put", String.class, Class.forName("net.minecraft.nbt.Tag"));
+                put.invoke(tag, e.getKey(), valueTag);
             }
-        } catch (Exception ignore) {
+
+            Method setTag = nmsStackClass.getMethod("setTag", compoundTagClass);
+            setTag.invoke(nms, tag);
+
+            Method toBukkit = craftStackClass.getMethod("asBukkitCopy", nmsStackClass);
+            stack = (ItemStack) toBukkit.invoke(null, nms);
+        } catch (Exception e) {
+            Bukkit.getLogger().warning("Failed to apply NMS components: " + e.getMessage());
+        }
+        return stack;
+    }
+
+    private ItemStack applyItemMeta(ItemStack stack, LootItem entry, String compName) {
+        // first, push the raw NBT through NMS so every component key is
+        // interpreted exactly as the game would.  this completely replaces
+        // the earlier Bukkit.deserialize approach.
+        if (entry.nbt != null) {
+            stack = applyNmsComponents(stack, entry.nbt);
         }
 
         ItemMeta meta = stack.getItemMeta();
@@ -372,7 +412,10 @@ public class LootTableManager {
             meta.setItemName(compName);
             stack.setItemMeta(meta);
         }
+        return stack;
     }
+
+    // remove old manual applyComponents; NMS now covers all cases
 
     /**
      * A single pool of potential loot entries.
