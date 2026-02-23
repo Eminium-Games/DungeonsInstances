@@ -684,6 +684,7 @@ public class DungeonManager {
         }
 
         // helper lambda to update a single attribute
+        @SuppressWarnings({ "deprecation", "removal" })
         java.util.function.BiConsumer<org.bukkit.attribute.Attribute, Double> updater = (attr, mul) -> {
             org.bukkit.attribute.AttributeInstance inst = ent.getAttribute(attr);
             if (inst == null) {

@@ -318,8 +318,6 @@ public class DungeonInstances extends JavaPlugin implements Listener {
             final org.bukkit.scheduler.BukkitTask[] taskHolder = new org.bukkit.scheduler.BukkitTask[1];
             taskHolder[0] = Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
                 int tries = 0;
-                int lastMessageSec = -1;
-
                 @Override
                 public void run() {
                     if (!player.isOnline()) {
