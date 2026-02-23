@@ -391,7 +391,7 @@ public class DungeonManager {
             for (org.bukkit.entity.Player p : world.getPlayers()) {
                 org.bukkit.Location safe = Bukkit.getWorlds().get(0).getSpawnLocation();
                 p.teleport(safe);
-                p.sendMessage("[DungeonInstances] You have been moved out of an unloaded instance.");
+                // p.sendMessage("[DungeonInstances] You have been moved out of an unloaded instance.");
             }
 
             Bukkit.unloadWorld(world, false);

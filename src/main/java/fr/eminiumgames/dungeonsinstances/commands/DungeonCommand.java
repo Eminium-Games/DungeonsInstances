@@ -383,44 +383,44 @@ public class DungeonCommand implements CommandExecutor {
                 long t2 = teleportDelay - 40L; // 2 seconds before
                 long t1 = teleportDelay - 20L; // 1 second before
 
-                // Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
-                //     for (UUID memberId : party.getMembers()) {
-                //         Player member = Bukkit.getPlayer(memberId);
-                //         if (member != null && member.isOnline()) {
-                //             try {
-                //                 member.playSound(member.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 0.6f);
-                //             } catch (NoSuchFieldError | IllegalArgumentException ignored) {
-                //             }
-                //             member.sendMessage(PREFIX + ChatColor.YELLOW + "3...");
-                //         }
-                //     }
-                // }, t3);
+                Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
+                    for (UUID memberId : party.getMembers()) {
+                        Player member = Bukkit.getPlayer(memberId);
+                        if (member != null && member.isOnline()) {
+                            try {
+                                member.playSound(member.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 0.6f);
+                            } catch (NoSuchFieldError | IllegalArgumentException ignored) {
+                            }
+                            member.sendMessage(PREFIX + ChatColor.YELLOW + "3...");
+                        }
+                    }
+                }, t3);
 
-                // Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
-                //     for (UUID memberId : party.getMembers()) {
-                //         Player member = Bukkit.getPlayer(memberId);
-                //         if (member != null && member.isOnline()) {
-                //             try {
-                //                 member.playSound(member.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 0.9f);
-                //             } catch (NoSuchFieldError | IllegalArgumentException ignored) {
-                //             }
-                //             member.sendMessage(PREFIX + ChatColor.YELLOW + "2...");
-                //         }
-                //     }
-                // }, t2);
+                Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
+                    for (UUID memberId : party.getMembers()) {
+                        Player member = Bukkit.getPlayer(memberId);
+                        if (member != null && member.isOnline()) {
+                            try {
+                                member.playSound(member.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 0.9f);
+                            } catch (NoSuchFieldError | IllegalArgumentException ignored) {
+                            }
+                            member.sendMessage(PREFIX + ChatColor.YELLOW + "2...");
+                        }
+                    }
+                }, t2);
 
-                // Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
-                //     for (UUID memberId : party.getMembers()) {
-                //         Player member = Bukkit.getPlayer(memberId);
-                //         if (member != null && member.isOnline()) {
-                //             try {
-                //                 member.playSound(member.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.2f);
-                //             } catch (NoSuchFieldError | IllegalArgumentException ignored) {
-                //             }
-                //             member.sendMessage(PREFIX + ChatColor.YELLOW + "1...");
-                //         }
-                //     }
-                // }, t1);
+                Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
+                    for (UUID memberId : party.getMembers()) {
+                        Player member = Bukkit.getPlayer(memberId);
+                        if (member != null && member.isOnline()) {
+                            try {
+                                member.playSound(member.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.2f);
+                            } catch (NoSuchFieldError | IllegalArgumentException ignored) {
+                            }
+                            member.sendMessage(PREFIX + ChatColor.YELLOW + "1...");
+                        }
+                    }
+                }, t1);
 
                 // Final teleport task
                 Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
@@ -438,7 +438,7 @@ public class DungeonCommand implements CommandExecutor {
                             member.playSound(member.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 2.0f, 1.0f);
                         }
                     }
-                }, 0L); // 200 ticks = 10 secondes
+                }, teleportDelay); // 200 ticks = 10 secondes
             } else {
                 player.sendMessage(PREFIX + ChatColor.RED + "Échec de la création de l'instance de donjon.");
             }

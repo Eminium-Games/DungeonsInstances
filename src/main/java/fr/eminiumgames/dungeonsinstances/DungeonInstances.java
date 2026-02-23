@@ -281,13 +281,11 @@ public class DungeonInstances extends JavaPlugin implements Listener {
 
         // Always log where the respawn event is fired, for diagnostic purposes.
         Bukkit.getLogger().info("[DungeonInstances] PlayerRespawnEvent triggered in " + worldName);
-        player.sendMessage("[DungeonInstances] Respawn event fired in world " + worldName);
 
         // if there is a recorded death world use that instead of current world
         String deathWorld = deathWorlds.remove(player.getUniqueId());
         if (deathWorld != null) {
             Bukkit.getLogger().info("[DungeonInstances] player died in " + deathWorld);
-            player.sendMessage("[DungeonInstances] You died in " + deathWorld);
             worldName = deathWorld;
             world = Bukkit.getWorld(worldName);
         }
