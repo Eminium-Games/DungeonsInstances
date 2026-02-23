@@ -105,11 +105,17 @@ public class DungeonManager {
         }
     }
 
+    // Name of the persistent data key we use to flag a mob's loot-table
+    // alias.  Stored in NBT so entities can carry it through world saves.
+    private static org.bukkit.NamespacedKey lootAliasKey;
+
     // store mobs placed in edit mode so they can be resurrected in instances
     private final File mobDataFolder = new File("plugins/DungeonInstances/mobSpawns");
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public DungeonManager() {
+        // initialise the namespaced key once we have a plugin instance
+        lootAliasKey = new org.bukkit.NamespacedKey(DungeonInstances.getInstance(), "lootAlias");
         reloadSpawnPoints();
     }
 
@@ -204,6 +210,8 @@ public class DungeonManager {
         if (world != null) {
             dungeonCache.put(templateName, world);
             Bukkit.getLogger().info("Loaded dungeon template: " + templateName);
+            // ensure loot table skeleton for this template
+            LootTableManager.getInstance().ensureTemplateHasAllDifficulties(templateName);
             // optionally clear existing mobs and respawn saved edit-mode creatures
             if (populateMobs) {
                 clearMobs(world);
@@ -217,6 +225,14 @@ public class DungeonManager {
             world.setGameRule(org.bukkit.GameRule.MOB_GRIEFING, false);
             world.setGameRule(org.bukkit.GameRule.DO_MOB_SPAWNING, false);
         }
+    }
+
+    /**
+     * Accessor for the loot alias key.  other classes depend on this to avoid
+     * hard‑coding the same NamespacedKey string in multiple places.
+     */
+    public static org.bukkit.NamespacedKey getLootAliasKey() {
+        return lootAliasKey;
     }
 
     /**
@@ -272,6 +288,9 @@ public class DungeonManager {
             Bukkit.getLogger().info("Created dungeon instance: " + instanceName + " (difficulty=" + difficulty + ")");
             // record difficulty so other systems (scoreboard) can access it later
             instanceDifficulties.put(instanceName, difficulty);
+            // keep loot tables in sync with template just in case the template was
+            // added while the server was running
+            LootTableManager.getInstance().ensureTemplateHasAllDifficulties(templateName);
             // disable natural mob spawning in edit mode worlds
             if (instanceName.startsWith("editmode_")) {
                 instance.setGameRule(org.bukkit.GameRule.MOB_GRIEFING, false);
@@ -307,6 +326,34 @@ public class DungeonManager {
     public Difficulty getDifficultyForInstance(String instanceName) {
         if (instanceName == null) return Difficulty.NORMAL;
         return instanceDifficulties.getOrDefault(instanceName, Difficulty.NORMAL);
+    }
+
+    /**
+     * Extract the template name from a world name used by this plugin (either
+     * an instance or editmode world).  The naming convention is
+     * <code>instance_<template>_<uuid></code> or <code>editmode_<template></code>.
+     * This method mirrors the logic used elsewhere in the codebase such as
+     * <code>onPlayerRespawn</code>.
+     *
+     * @param worldName name of the world (may be null)
+     * @return the template identifier or null if the world is not recognised
+     */
+    public static String getTemplateFromWorld(String worldName) {
+        if (worldName == null)
+            return null;
+        String remainder;
+        if (worldName.startsWith("instance_")) {
+            remainder = worldName.substring("instance_".length());
+        } else if (worldName.startsWith("editmode_")) {
+            remainder = worldName.substring("editmode_".length());
+        } else {
+            return null;
+        }
+        int lastIdx = remainder.lastIndexOf('_');
+        if (lastIdx == -1) {
+            return remainder;
+        }
+        return remainder.substring(0, lastIdx);
     }
 
     /**
@@ -603,6 +650,16 @@ public class DungeonManager {
 
         e.setPersistent(false);
         ((LivingEntity) e).setRemoveWhenFarAway(false);
+
+        // reapply saved loot alias if present (doesn't depend on equipment)
+        if (map.containsKey("lootAlias") && e instanceof org.bukkit.entity.LivingEntity) {
+            String alias = String.valueOf(map.get("lootAlias"));
+            if (alias != null) {
+                ((org.bukkit.entity.LivingEntity) e).getPersistentDataContainer()
+                        .set(getLootAliasKey(), org.bukkit.persistence.PersistentDataType.STRING, alias);
+            }
+        }
+
         // equipment
         if (map.containsKey("Equipment") && e instanceof org.bukkit.entity.LivingEntity) {
             Object eqObj = map.get("Equipment");
@@ -849,7 +906,7 @@ public class DungeonManager {
                 d.pitch = loc.getPitch();
                 d.nbt = serializeEntityNBT(e);
 
-                Map<String, Object> extras = gatherExtras(le);
+                        Map<String, Object> extras = gatherExtras(le);
                 if (!extras.isEmpty()) {
                     d.extra = extras;
                 }
@@ -868,6 +925,9 @@ public class DungeonManager {
         // clear current creatures and respawn from the newly saved file
         clearMobs(editWorld);
         spawnSavedMobs(templateName, editWorld, Difficulty.NORMAL);
+
+        // ensure loot table structure exists for this template in every difficulty
+        LootTableManager.getInstance().ensureTemplateHasAllDifficulties(templateName);
     }
 
     /**
@@ -878,6 +938,13 @@ public class DungeonManager {
         Map<String, Object> extras = new HashMap<>();
         // equipment
         org.bukkit.inventory.EntityEquipment eq = le.getEquipment();
+        // Loot alias stored via persistent data container (admins set it while
+        // editing).  We persist it separately because older versions of the
+        // NMS "save" method sometimes ignored the contents of the custom
+        // PersistentDataContainer field.
+        if (le.getPersistentDataContainer().has(getLootAliasKey(), org.bukkit.persistence.PersistentDataType.STRING)) {
+            extras.put("lootAlias", le.getPersistentDataContainer().get(getLootAliasKey(), org.bukkit.persistence.PersistentDataType.STRING));
+        }
         if (eq != null) {
             Map<String, Object> equipMap = new HashMap<>();
             if (eq.getHelmet() != null) {

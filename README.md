@@ -114,6 +114,140 @@ Autres commandes n'ont pas de permissions spécifiques par défaut (vous pouvez 
 - Si le scoreboard n'apparaît pas : assurez-vous d'être dans un monde `instance_...` et d'appartenir à un party.
 - Si les noms de joueurs hors-ligne s'affichent mal, le plugin utilise `Bukkit.getOfflinePlayer(UUID).getName()` comme fallback.
 
+## Loot tables personnalisées
+
+La version récente de DungeonInstances introduit un système de loot tables par donjon/difficulté.  Chaque mob peut être marqué
+avec un **alias de pool** qui détermine la table de butin utilisée lorsque le mob meurt dans
+une instance.  L'alias est stocké en NBT (PersistentDataContainer) et est conservé lors des
+sauvegardes/chargements de mob.
+
+### Configuration
+
+Le fichier de configuration se trouve dans `plugins/DungeonInstances/lootTables.json`.  Si le
+module est chargé pour la première fois, un fichier vide `{}` est créé afin que les
+administrateurs puissent le remplir à la main.  La structure attendue est la suivante :
+
+```json
+{
+  "<nom_template>": {
+    "<difficulty>": {
+      "<alias>": {
+        "iterations": <nombre de lancers>,
+        "loots": [
+          {
+            "item": "minecraft:diamond_sword",
+            "nbt": { "item_name": "Épée légendaire" },
+            "count": 1,
+            "chance": 0.1
+          },
+          {
+            "item": "minecraft:iron_nugget",
+            "nbt": { "item_name": "Écu" },
+            "count": 1,
+            "chance": 0.4
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+Pour illustrer l’usage des quatre difficultés, voici un exemple complet pour
+un template `manaria` et un alias `default` :
+
+```json
+{
+  "manaria": {
+    "BEGINNER": {
+      "default": {
+        "iterations": 2,
+        "loots": [
+          {"item":"minecraft:emerald","nbt":{},"count":1,"chance":0.2},
+          {"item":"minecraft:gold_nugget","nbt":{},"count":2,"chance":0.5}
+        ]
+      }
+    },
+    "NORMAL": {
+      "default": {
+        "iterations": 3,
+        "loots": [
+          {"item":"minecraft:emerald","nbt":{},"count":1,"chance":0.4},
+          {"item":"minecraft:gold_ingot","nbt":{},"count":1,"chance":0.25},
+          {"item":"minecraft:iron_nugget","nbt":{},"count":3,"chance":0.6}
+        ]
+      }
+    },
+    "HEROIC": {
+      "default": {
+        "iterations": 4,
+        "loots": [
+          {"item":"minecraft:diamond","nbt":{},"count":1,"chance":0.05},
+          {"item":"minecraft:gold_ingot","nbt":{},"count":2,"chance":0.4},
+          {"item":"minecraft:iron_ingot","nbt":{},"count":5,"chance":0.8}
+        ]
+      }
+    },
+    "MYTHIC": {
+      "default": {
+        "iterations": 5,
+        "loots": [
+          {"item":"minecraft:nether_star","nbt":{},"count":1,"chance":0.01},
+          {"item":"minecraft:diamond","nbt":{},"count":2,"chance":0.2},
+          {"item":"minecraft:gold_ingot","nbt":{},"count":4,"chance":0.5}
+        ]
+      }
+    }
+  }
+}
+```
+
+Dans cet exemple la difficulté croissante augmente à la fois le nombre
+`iterations` et les chances de gagner des objets précieux ; le lecteur pourra
+bien sûr adapter ces chiffres à ses propres besoins.
+
+
+- `iterations` : nombre de fois où l'on visite la pool ; chaque itération tire un item
+  au hasard parmi la liste `loots`.
+- `loots` : tableau d'entrées possibles. Pour chaque entrée le champ `chance` est comparer
+  à un réel aléatoire (`0.0`–`1.0`) ; si le tirage est réussi, l'item est ajouté aux drops.
+- `item` : identifiant de matériau Bukkit/Spigot (`DIAMOND_SWORD`, `IRON_NUGGET`, etc.).
+- `nbt` : mappage libre permettant de définir un nom (`item_name`), une lore, etc.  Seules
+  quelques clés simples sont gérées pour l'instant (voir code source).
+- `count` : quantité d'items à générer lorsque l'entrée est choisie.
+
+### Assignation d'alias
+
+Pendant l'édition d'un template vous pouvez regarder un mob et
+exécuter :
+
+```
+/dungeon admin alias <alias>
+```
+
+Le plugin indiquera l'alias actuel si aucun argument n'est fourni.  Pour effacer l'alias,
+utilisez `none` :
+
+```
+/dungeon admin alias none
+```
+
+L'alias est sauvegardé avec le mob et restauré automatiquement dans les instances.
+
+### Reload de la configuration
+
+Après avoir édité `lootTables.json` sur le disque, chargez les changements en jeu avec :
+
+```
+/dungeon admin reloadloot
+```
+
+### Comportement en jeu
+
+Lorsqu'un mob portant un alias meurt dans une instance, les drops vanilla sont supprimés et
+remplacés par les objets calculés à partir de la pool correspondante (template +
+difficulté + alias).  Si aucune table n'est trouvée, le comportement vanilla reste inchangé.
+
 ## Personnalisation & suggestions
 
 - Vous pouvez modifier la fréquence de mise à jour du scoreboard (`DungeonScoreboardManager`) et les formats de messages dans le code.

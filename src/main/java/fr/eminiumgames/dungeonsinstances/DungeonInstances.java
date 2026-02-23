@@ -15,6 +15,8 @@ import fr.eminiumgames.dungeonsinstances.commands.DungeonCommand;
 import fr.eminiumgames.dungeonsinstances.commands.DungeonTabCompleter;
 import fr.eminiumgames.dungeonsinstances.managers.DungeonManager;
 import fr.eminiumgames.dungeonsinstances.managers.DungeonScoreboardManager;
+import fr.eminiumgames.dungeonsinstances.managers.LootManager;
+import fr.eminiumgames.dungeonsinstances.managers.LootTableManager;
 import fr.eminiumgames.dungeonsinstances.managers.PartyManager;
 
 public class DungeonInstances extends JavaPlugin implements Listener {
@@ -64,6 +66,10 @@ public class DungeonInstances extends JavaPlugin implements Listener {
         getCommand("dungeon").setTabCompleter(new DungeonTabCompleter());
         getServer().getPluginManager().registerEvents(this, this);
 
+        // initialise loot subsystem before anything else may rely on it
+        LootTableManager.getInstance().load();
+        getServer().getPluginManager().registerEvents(new LootManager(), this);
+
         // Load all dungeon templates at startup but do *not* populate mobs or
         // clear natural spawns.  this avoids touching the source worlds while
         // still making them available for instance creation later.
@@ -93,6 +99,8 @@ public class DungeonInstances extends JavaPlugin implements Listener {
             if (templateFolders != null) {
                 for (File template : templateFolders) {
                     dungeonManager.loadDungeonTemplate(template.getName(), false);
+                    // ensure loot table entries exist for all difficulties
+                    LootTableManager.getInstance().ensureTemplateHasAllDifficulties(template.getName());
                 }
             }
         } else {

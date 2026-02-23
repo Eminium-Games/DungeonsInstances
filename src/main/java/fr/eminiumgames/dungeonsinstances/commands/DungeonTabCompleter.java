@@ -40,6 +40,8 @@ public class DungeonTabCompleter implements TabCompleter {
             suggestions.add("save");
             suggestions.add("purge");
             suggestions.add("setspawn");
+            suggestions.add("alias");
+            suggestions.add("reloadloot");
             return suggestions.stream()
                     .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
                     .collect(Collectors.toList());

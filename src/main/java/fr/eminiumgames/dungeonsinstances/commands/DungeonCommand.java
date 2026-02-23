@@ -11,10 +11,13 @@ import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.util.RayTraceResult;
 
 import fr.eminiumgames.dungeonsinstances.DungeonInstances;
 import fr.eminiumgames.dungeonsinstances.managers.DungeonManager;
+import fr.eminiumgames.dungeonsinstances.managers.LootTableManager;
 import fr.eminiumgames.dungeonsinstances.managers.PartyManager;
 
 public class DungeonCommand implements CommandExecutor {
@@ -48,8 +51,10 @@ public class DungeonCommand implements CommandExecutor {
 
             if (args.length < 2) {
                 player.sendMessage("Usage: /dungeon admin <subcommand>");
-                player.sendMessage("Available subcommands: edit, save, purge, setspawn");
+                player.sendMessage("Available subcommands: edit, save, purge, setspawn, alias, reloadloot");
                 player.sendMessage("/dungeon admin save <world> [radius] [y<value>] - persist mobs; optional radius limits to nearby creatures, y<value> ignores mobs below that Y");
+                player.sendMessage("/dungeon admin alias <name> - tag the mob you are looking at so its drops come from the corresponding pool; use 'none' to clear");
+                player.sendMessage("/dungeon admin reloadloot - reload the lootTables.json file from disk");
                 return true;
             }
 
@@ -116,6 +121,39 @@ public class DungeonCommand implements CommandExecutor {
 
                     break;
 
+                case "alias":
+                    // set or show loot alias on the mob the player is looking at
+                    if (args.length < 3) {
+                        // just display current alias if possible
+                        org.bukkit.entity.Entity tgt = getTargetEntity(player, 10);
+                        if (tgt instanceof LivingEntity) {
+                            String cur = ((LivingEntity) tgt).getPersistentDataContainer()
+                                    .get(DungeonManager.getLootAliasKey(), org.bukkit.persistence.PersistentDataType.STRING);
+                            player.sendMessage(PREFIX + "Current loot alias: " + (cur == null ? "<none>" : cur));
+                        } else {
+                            player.sendMessage(PREFIX + "You must be looking at a living entity to set an alias.");
+                        }
+                        return true;
+                    }
+                    org.bukkit.entity.Entity tgt = getTargetEntity(player, 10);
+                    if (!(tgt instanceof LivingEntity)) {
+                        player.sendMessage(PREFIX + "You must look at a mob to assign an alias.");
+                        return true;
+                    }
+                    String newAlias = args[2];
+                    if ("none".equalsIgnoreCase(newAlias)) {
+                        ((LivingEntity) tgt).getPersistentDataContainer().remove(DungeonManager.getLootAliasKey());
+                        player.sendMessage(PREFIX + "Cleared loot alias for the targeted mob.");
+                    } else {
+                        ((LivingEntity) tgt).getPersistentDataContainer().set(DungeonManager.getLootAliasKey(),
+                                org.bukkit.persistence.PersistentDataType.STRING, newAlias);
+                        player.sendMessage(PREFIX + "Set loot alias '" + newAlias + "' on the targeted mob.");
+                    }
+                    return true;
+                case "reloadloot":
+                    LootTableManager.getInstance().load();
+                    player.sendMessage(PREFIX + "Loot tables reloaded.");
+                    return true;
                 case "save":
                     String worldNameToSave;
                     if (args.length < 3) {
@@ -345,44 +383,44 @@ public class DungeonCommand implements CommandExecutor {
                 long t2 = teleportDelay - 40L; // 2 seconds before
                 long t1 = teleportDelay - 20L; // 1 second before
 
-                Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
-                    for (UUID memberId : party.getMembers()) {
-                        Player member = Bukkit.getPlayer(memberId);
-                        if (member != null && member.isOnline()) {
-                            try {
-                                member.playSound(member.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 0.6f);
-                            } catch (NoSuchFieldError | IllegalArgumentException ignored) {
-                            }
-                            member.sendMessage(PREFIX + ChatColor.YELLOW + "3...");
-                        }
-                    }
-                }, t3);
+                // Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
+                //     for (UUID memberId : party.getMembers()) {
+                //         Player member = Bukkit.getPlayer(memberId);
+                //         if (member != null && member.isOnline()) {
+                //             try {
+                //                 member.playSound(member.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 0.6f);
+                //             } catch (NoSuchFieldError | IllegalArgumentException ignored) {
+                //             }
+                //             member.sendMessage(PREFIX + ChatColor.YELLOW + "3...");
+                //         }
+                //     }
+                // }, t3);
 
-                Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
-                    for (UUID memberId : party.getMembers()) {
-                        Player member = Bukkit.getPlayer(memberId);
-                        if (member != null && member.isOnline()) {
-                            try {
-                                member.playSound(member.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 0.9f);
-                            } catch (NoSuchFieldError | IllegalArgumentException ignored) {
-                            }
-                            member.sendMessage(PREFIX + ChatColor.YELLOW + "2...");
-                        }
-                    }
-                }, t2);
+                // Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
+                //     for (UUID memberId : party.getMembers()) {
+                //         Player member = Bukkit.getPlayer(memberId);
+                //         if (member != null && member.isOnline()) {
+                //             try {
+                //                 member.playSound(member.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 0.9f);
+                //             } catch (NoSuchFieldError | IllegalArgumentException ignored) {
+                //             }
+                //             member.sendMessage(PREFIX + ChatColor.YELLOW + "2...");
+                //         }
+                //     }
+                // }, t2);
 
-                Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
-                    for (UUID memberId : party.getMembers()) {
-                        Player member = Bukkit.getPlayer(memberId);
-                        if (member != null && member.isOnline()) {
-                            try {
-                                member.playSound(member.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.2f);
-                            } catch (NoSuchFieldError | IllegalArgumentException ignored) {
-                            }
-                            member.sendMessage(PREFIX + ChatColor.YELLOW + "1...");
-                        }
-                    }
-                }, t1);
+                // Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
+                //     for (UUID memberId : party.getMembers()) {
+                //         Player member = Bukkit.getPlayer(memberId);
+                //         if (member != null && member.isOnline()) {
+                //             try {
+                //                 member.playSound(member.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.2f);
+                //             } catch (NoSuchFieldError | IllegalArgumentException ignored) {
+                //             }
+                //             member.sendMessage(PREFIX + ChatColor.YELLOW + "1...");
+                //         }
+                //     }
+                // }, t1);
 
                 // Final teleport task
                 Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
@@ -400,7 +438,7 @@ public class DungeonCommand implements CommandExecutor {
                             member.playSound(member.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 2.0f, 1.0f);
                         }
                     }
-                }, teleportDelay); // 200 ticks = 10 secondes
+                }, 0L); // 200 ticks = 10 secondes
             } else {
                 player.sendMessage(PREFIX + ChatColor.RED + "Échec de la création de l'instance de donjon.");
             }
@@ -680,5 +718,21 @@ public class DungeonCommand implements CommandExecutor {
         }
 
         return true;
+    }
+    /**
+     * Ray-trace from player's eyes and return the first living entity hit
+     * within the given distance (excluding the player itself).
+     */
+    private static org.bukkit.entity.Entity getTargetEntity(Player player, double maxDistance) {
+        if (player == null || player.getWorld() == null) {
+            return null;
+        }
+        RayTraceResult res = player.getWorld().rayTraceEntities(player.getEyeLocation(),
+                player.getEyeLocation().getDirection(), maxDistance,
+                0.5, e -> e instanceof LivingEntity && !e.equals(player));
+        if (res != null) {
+            return res.getHitEntity();
+        }
+        return null;
     }
 }
