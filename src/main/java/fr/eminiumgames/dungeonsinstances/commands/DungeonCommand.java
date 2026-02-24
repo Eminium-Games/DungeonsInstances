@@ -265,7 +265,7 @@ public class DungeonCommand implements CommandExecutor {
                     // Schedule unload after a delay to ensure all data is saved
                     final String worldToUnload = worldNameToSave;
                     Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
-                        // DungeonInstances.getInstance().getDungeonManager().unloadDungeonInstance(worldToUnload);
+
                         player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
                         player.sendMessage(PREFIX + ChatColor.GREEN + "Dungeon template '"
                                 + worldToUnload.replace("editmode_", "") + "' has been saved successfully!");

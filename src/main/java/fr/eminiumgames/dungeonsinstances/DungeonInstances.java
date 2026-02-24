@@ -237,19 +237,7 @@ public class DungeonInstances extends JavaPlugin implements Listener {
         }
     }
 
-    // @EventHandler
-    // public void onCreatureSpawn(org.bukkit.event.entity.CreatureSpawnEvent event)
-    // {
-    // World w = event.getLocation().getWorld();
-    // if (w != null && w.getName().startsWith("editmode_")) {
-    // if (event.getEntity() instanceof LivingEntity) {
-    // ((LivingEntity) event.getEntity()).setAI(false);
-    // }
-    // // auto-save mobs immediately when they appear in an editor world
-    // String tpl = w.getName().substring("editmode_".length());
-    // dungeonManager.saveEditMobs(tpl, w);
-    // }
-    // }
+
 
     /**
      * Remember the world of a player's death. We store this here instead of

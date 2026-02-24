@@ -761,8 +761,6 @@ public class DungeonManager {
             inst.addModifier(mod);
         };
 
-        // updater.accept(org.bukkit.attribute.Attribute.MAX_HEALTH,
-        // diff.getHealthMultiplier());
         updater.accept(org.bukkit.attribute.Attribute.ATTACK_DAMAGE, diff.getDamageMultiplier());
         updater.accept(org.bukkit.attribute.Attribute.ARMOR, diff.getArmorMultiplier());
 
@@ -1075,27 +1073,6 @@ public class DungeonManager {
                         int idx = readCount.getAndIncrement();
                         Bukkit.getLogger()
                                 .info("spawnSavedMobs: entry #" + idx + " type=" + d.type + " uuid=" + d.uuid);
-                        // skip if an entity with the same uuid already exists in *this* world
-                        // if (d.uuid != null) {
-                        // try {
-                        // java.util.UUID orig = java.util.UUID.fromString(d.uuid);
-                        // // world.getEntity(UUID) does not exist; scan current world entities
-                        // org.bukkit.entity.Entity existing = null;
-                        // for (org.bukkit.entity.Entity e : world.getEntities()) {
-                        // if (orig.equals(e.getUniqueId())) {
-                        // existing = e;
-                        // break;
-                        // }
-                        // }
-                        // if (existing != null) {
-                        // Bukkit.getLogger().info("spawnSavedMobs: skipping mob " + d.type + " with
-                        // uuid " + d.uuid + " because it already exists in world " + world.getName());
-                        // return;
-                        // }
-                        // } catch (IllegalArgumentException ignored) {
-                        // // malformed uuid; we'll just try to spawn normally
-                        // }
-                        // }
                         try {
                             org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.valueOf(d.type);
                             Location loc = new Location(world, d.x, d.y, d.z, d.yaw, d.pitch);
