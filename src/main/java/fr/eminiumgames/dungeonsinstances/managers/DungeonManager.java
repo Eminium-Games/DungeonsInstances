@@ -938,13 +938,19 @@ public class DungeonManager {
         Map<String, Object> extras = new HashMap<>();
         // equipment
         org.bukkit.inventory.EntityEquipment eq = le.getEquipment();
-        // Loot alias stored via persistent data container (admins set it while
-        // editing).  We persist it separately because older versions of the
-        // NMS "save" method sometimes ignored the contents of the custom
-        // PersistentDataContainer field.
-        if (le.getPersistentDataContainer().has(getLootAliasKey(), org.bukkit.persistence.PersistentDataType.STRING)) {
-            extras.put("lootAlias", le.getPersistentDataContainer().get(getLootAliasKey(), org.bukkit.persistence.PersistentDataType.STRING));
+        // Loot alias is kept in the persistent data container.  Admins assign
+        // it with "/dungeon admin alias <name>" while editing; mobs without an
+        // explicit alias implicitly use "default" when dropped in an instance.
+        // We explicitly store something here so that the saved JSON can be
+        // edited by hand and to preserve the default value if desired.
+        String alias = le.getPersistentDataContainer().get(getLootAliasKey(), org.bukkit.persistence.PersistentDataType.STRING);
+        if (alias == null) {
+            // no alias set on the mob – we still write "default" so that the
+            // template file contains a clear indicator and rebuilds always have
+            // an alias value when the world is reloaded.
+            alias = "default";
         }
+        extras.put("lootAlias", alias);
         if (eq != null) {
             Map<String, Object> equipMap = new HashMap<>();
             if (eq.getHelmet() != null) {

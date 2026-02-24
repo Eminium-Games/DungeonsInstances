@@ -223,7 +223,10 @@ The plugin shows the current alias if no argument is given. To clear the alias, 
 /dungeon admin alias none
 ```
 
-The alias is saved with the mob and automatically restored in instances.
+The alias is saved with the mob and automatically restored in instances.  When the template is written to disk all mobs are recorded with a
+`lootAlias` field; mobs that were not explicitly tagged receive the
+value `default`, so you can always see or tweak the setting manually in the
+JSON file.
 
 ### Reloading Configuration
 
