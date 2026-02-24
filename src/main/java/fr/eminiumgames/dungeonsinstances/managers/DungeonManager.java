@@ -43,7 +43,7 @@ public class DungeonManager {
     private final File spawnDataFile = new File("plugins/DungeonInstances/spawnPoints.json");
 
     /**
-     * Supported difficulty levels for dungeon instances.  Multipliers apply to
+     * Supported difficulty levels for dungeon instances. Multipliers apply to
      * mob health, attack damage and armor (resistance).
      */
     public enum Difficulty {
@@ -106,7 +106,7 @@ public class DungeonManager {
     }
 
     // Name of the persistent data key we use to flag a mob's loot-table
-    // alias.  Stored in NBT so entities can carry it through world saves.
+    // alias. Stored in NBT so entities can carry it through world saves.
     private static org.bukkit.NamespacedKey lootAliasKey;
 
     // store mobs placed in edit mode so they can be resurrected in instances
@@ -228,7 +228,7 @@ public class DungeonManager {
     }
 
     /**
-     * Accessor for the loot alias key.  other classes depend on this to avoid
+     * Accessor for the loot alias key. other classes depend on this to avoid
      * hard‑coding the same NamespacedKey string in multiple places.
      */
     public static org.bukkit.NamespacedKey getLootAliasKey() {
@@ -324,13 +324,14 @@ public class DungeonManager {
      * Retrieve the difficulty associated with a given instance world name.
      */
     public Difficulty getDifficultyForInstance(String instanceName) {
-        if (instanceName == null) return Difficulty.NORMAL;
+        if (instanceName == null)
+            return Difficulty.NORMAL;
         return instanceDifficulties.getOrDefault(instanceName, Difficulty.NORMAL);
     }
 
     /**
      * Extract the template name from a world name used by this plugin (either
-     * an instance or editmode world).  The naming convention is
+     * an instance or editmode world). The naming convention is
      * <code>instance_<template>_<uuid></code> or <code>editmode_<template></code>.
      * This method mirrors the logic used elsewhere in the codebase such as
      * <code>onPlayerRespawn</code>.
@@ -391,7 +392,8 @@ public class DungeonManager {
             for (org.bukkit.entity.Player p : world.getPlayers()) {
                 org.bukkit.Location safe = Bukkit.getWorlds().get(0).getSpawnLocation();
                 p.teleport(safe);
-                // p.sendMessage("[DungeonInstances] You have been moved out of an unloaded instance.");
+                // p.sendMessage("[DungeonInstances] You have been moved out of an unloaded
+                // instance.");
             }
 
             Bukkit.unloadWorld(world, false);
@@ -726,7 +728,7 @@ public class DungeonManager {
      *
      * Rather than mutating the base value (which can be overridden by other
      * systems such as mob type defaults), we add a temporary attribute modifier
-     * with operation MULTIPLY_SCALAR_1.  This makes our change stack properly
+     * with operation MULTIPLY_SCALAR_1. This makes our change stack properly
      * with vanilla attributes and avoids resetting hard-coded values like the
      * wither skeleton's 20 health.
      */
@@ -759,7 +761,8 @@ public class DungeonManager {
             inst.addModifier(mod);
         };
 
-        // updater.accept(org.bukkit.attribute.Attribute.MAX_HEALTH, diff.getHealthMultiplier());
+        // updater.accept(org.bukkit.attribute.Attribute.MAX_HEALTH,
+        // diff.getHealthMultiplier());
         updater.accept(org.bukkit.attribute.Attribute.ATTACK_DAMAGE, diff.getDamageMultiplier());
         updater.accept(org.bukkit.attribute.Attribute.ARMOR, diff.getArmorMultiplier());
 
@@ -906,7 +909,7 @@ public class DungeonManager {
                 d.pitch = loc.getPitch();
                 d.nbt = serializeEntityNBT(e);
 
-                        Map<String, Object> extras = gatherExtras(le);
+                Map<String, Object> extras = gatherExtras(le);
                 if (!extras.isEmpty()) {
                     d.extra = extras;
                 }
@@ -938,12 +941,13 @@ public class DungeonManager {
         Map<String, Object> extras = new HashMap<>();
         // equipment
         org.bukkit.inventory.EntityEquipment eq = le.getEquipment();
-        // Loot alias is kept in the persistent data container.  Admins assign
+        // Loot alias is kept in the persistent data container. Admins assign
         // it with "/dungeon admin alias <name>" while editing; mobs without an
         // explicit alias implicitly use "default" when dropped in an instance.
         // We explicitly store something here so that the saved JSON can be
         // edited by hand and to preserve the default value if desired.
-        String alias = le.getPersistentDataContainer().get(getLootAliasKey(), org.bukkit.persistence.PersistentDataType.STRING);
+        String alias = le.getPersistentDataContainer().get(getLootAliasKey(),
+                org.bukkit.persistence.PersistentDataType.STRING);
         if (alias == null) {
             // no alias set on the mob – we still write "default" so that the
             // template file contains a clear indicator and rebuilds always have
@@ -1027,8 +1031,8 @@ public class DungeonManager {
     }
 
     /**
-     * Spawn mobs previously saved for a dungeon template.  The supplied difficulty
-     * is used to adjust their attributes.  Existing callers that do not care
+     * Spawn mobs previously saved for a dungeon template. The supplied difficulty
+     * is used to adjust their attributes. Existing callers that do not care
      * about difficulty can use {@link #spawnSavedMobs(String, World)} which
      * delegates to this method with {@link Difficulty#NORMAL}.
      */

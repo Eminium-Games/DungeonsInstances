@@ -320,11 +320,13 @@ public class LootTableManager {
     }
 
     private String extractDisplayName(LootItem entry) {
-        if (entry.nbt == null) return null;
-        
+        if (entry.nbt == null)
+            return null;
+
         String name = findInMap(entry.nbt, "item_name", "displayName");
-        if (name != null) return name;
-        
+        if (name != null)
+            return name;
+
         if (entry.nbt.get("components") instanceof Map) {
             @SuppressWarnings("unchecked")
             Map<String, Object> comps = (Map<String, Object>) entry.nbt.get("components");
@@ -336,13 +338,15 @@ public class LootTableManager {
     private String findInMap(Map<String, Object> map, String... keys) {
         for (String key : keys) {
             Object val = map.get(key);
-            if (val instanceof String) return (String) val;
+            if (val instanceof String)
+                return (String) val;
         }
         return null;
     }
 
     private void ensureComponentsInNBT(LootItem entry, String displayName) {
-        if (entry.nbt == null) entry.nbt = new HashMap<>();
+        if (entry.nbt == null)
+            entry.nbt = new HashMap<>();
         if (!entry.nbt.containsKey("components")) {
             Map<String, Object> comps = new HashMap<>(entry.nbt);
             if (!comps.containsKey("minecraft:custom_name") && extractDisplayName(entry) != null) {
@@ -360,7 +364,8 @@ public class LootTableManager {
      * exactly as if they were read from an actual ItemStack nbt blob.
      */
     private ItemStack applyNmsComponents(ItemStack stack, Map<String, Object> nbtMap) {
-        if (nbtMap == null || nbtMap.isEmpty()) return stack;
+        if (nbtMap == null || nbtMap.isEmpty())
+            return stack;
         try {
             // reflection to avoid compile-time NMS dependency
             Class<?> craftStackClass = Class.forName("org.bukkit.craftbukkit.v1_21_R2.inventory.CraftItemStack");
@@ -371,7 +376,8 @@ public class LootTableManager {
             Method hasTag = nmsStackClass.getMethod("hasTag");
             Method getTag = nmsStackClass.getMethod("getTag");
             Class<?> compoundTagClass = Class.forName("net.minecraft.nbt.CompoundTag");
-            Object tag = (Boolean) hasTag.invoke(nms) ? getTag.invoke(nms) : compoundTagClass.getConstructor().newInstance();
+            Object tag = (Boolean) hasTag.invoke(nms) ? getTag.invoke(nms)
+                    : compoundTagClass.getConstructor().newInstance();
 
             Class<?> tagClass = Class.forName("net.minecraft.nbt.Tag");
             Method aMethod = tagClass.getMethod("a", Object.class);
@@ -396,7 +402,7 @@ public class LootTableManager {
 
     private ItemStack applyItemMeta(ItemStack stack, LootItem entry, String compName) {
         // first, push the raw NBT through NMS so every component key is
-        // interpreted exactly as the game would.  this completely replaces
+        // interpreted exactly as the game would. this completely replaces
         // the earlier Bukkit.deserialize approach.
         if (entry.nbt != null) {
             stack = applyNmsComponents(stack, entry.nbt);

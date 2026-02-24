@@ -36,7 +36,7 @@ public class DungeonInstances extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         // ensure we have a spawnPoints.json inside the plugin folder so that
-        // the manager can load saved spawn locations.  if the file is already
+        // the manager can load saved spawn locations. if the file is already
         // present we leave it alone; otherwise copy the built‑in default from
         // the JAR resources (src/main/resources/spawnPoints.json).
         File spawnFile = new File(getDataFolder(), "spawnPoints.json");
@@ -71,7 +71,7 @@ public class DungeonInstances extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new LootManager(), this);
 
         // Load all dungeon templates at startup but do *not* populate mobs or
-        // clear natural spawns.  this avoids touching the source worlds while
+        // clear natural spawns. this avoids touching the source worlds while
         // still making them available for instance creation later.
         File templatesFolder = new File(getDataFolder().getParentFile().getParentFile(), "templates-dungeons");
 
@@ -238,16 +238,17 @@ public class DungeonInstances extends JavaPlugin implements Listener {
     }
 
     // @EventHandler
-    // public void onCreatureSpawn(org.bukkit.event.entity.CreatureSpawnEvent event) {
-    //     World w = event.getLocation().getWorld();
-    //     if (w != null && w.getName().startsWith("editmode_")) {
-    //         if (event.getEntity() instanceof LivingEntity) {
-    //             ((LivingEntity) event.getEntity()).setAI(false);
-    //         }
-    //         // auto-save mobs immediately when they appear in an editor world
-    //         String tpl = w.getName().substring("editmode_".length());
-    //         dungeonManager.saveEditMobs(tpl, w);
-    //     }
+    // public void onCreatureSpawn(org.bukkit.event.entity.CreatureSpawnEvent event)
+    // {
+    // World w = event.getLocation().getWorld();
+    // if (w != null && w.getName().startsWith("editmode_")) {
+    // if (event.getEntity() instanceof LivingEntity) {
+    // ((LivingEntity) event.getEntity()).setAI(false);
+    // }
+    // // auto-save mobs immediately when they appear in an editor world
+    // String tpl = w.getName().substring("editmode_".length());
+    // dungeonManager.saveEditMobs(tpl, w);
+    // }
     // }
 
     /**
@@ -324,6 +325,7 @@ public class DungeonInstances extends JavaPlugin implements Listener {
             final org.bukkit.scheduler.BukkitTask[] taskHolder = new org.bukkit.scheduler.BukkitTask[1];
             taskHolder[0] = Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
                 int tries = 0;
+
                 @Override
                 public void run() {
                     if (!player.isOnline()) {

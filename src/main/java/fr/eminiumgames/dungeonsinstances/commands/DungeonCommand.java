@@ -37,7 +37,8 @@ public class DungeonCommand implements CommandExecutor {
 
         if (args.length < 1) {
             player.sendMessage("Available subcommands:");
-            player.sendMessage("/dungeon instance <dungeon-name> [difficulty] - Create a dungeon instance (default Normal)");
+            player.sendMessage(
+                    "/dungeon instance <dungeon-name> [difficulty] - Create a dungeon instance (default Normal)");
             return true;
         }
 
@@ -52,8 +53,10 @@ public class DungeonCommand implements CommandExecutor {
             if (args.length < 2) {
                 player.sendMessage("Usage: /dungeon admin <subcommand>");
                 player.sendMessage("Available subcommands: edit, save, purge, setspawn, alias, reloadloot");
-                player.sendMessage("/dungeon admin save <world> [radius] [y<value>] - persist mobs; optional radius limits to nearby creatures, y<value> ignores mobs below that Y");
-                player.sendMessage("/dungeon admin alias <name> - tag the mob you are looking at so its drops come from the corresponding pool; use 'none' to clear");
+                player.sendMessage(
+                        "/dungeon admin save <world> [radius] [y<value>] - persist mobs; optional radius limits to nearby creatures, y<value> ignores mobs below that Y");
+                player.sendMessage(
+                        "/dungeon admin alias <name> - tag the mob you are looking at so its drops come from the corresponding pool; use 'none' to clear");
                 player.sendMessage("/dungeon admin reloadloot - reload the lootTables.json file from disk");
                 return true;
             }
@@ -80,15 +83,16 @@ public class DungeonCommand implements CommandExecutor {
                         World worldRef = editWorld;
                         String templateRef = templateName;
                         Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
-                            java.util.List<fr.eminiumgames.dungeonsinstances.managers.DungeonManager.MobData> saved =
-                                    DungeonInstances.getInstance().getDungeonManager().loadEditMobs(templateRef);
-                            // always re‑populate from the saved file if any entries exist.  in
+                            java.util.List<fr.eminiumgames.dungeonsinstances.managers.DungeonManager.MobData> saved = DungeonInstances
+                                    .getInstance().getDungeonManager().loadEditMobs(templateRef);
+                            // always re‑populate from the saved file if any entries exist. in
                             // the past we only did this when the world contained no living
                             // entities, which meant stale skeletons from an earlier session
                             // would remain and display incorrectly without their NBT.
                             if (!saved.isEmpty()) {
                                 DungeonInstances.getInstance().getDungeonManager().clearMobs(worldRef);
-                                DungeonInstances.getInstance().getDungeonManager().spawnSavedMobs(templateRef, worldRef, DungeonManager.Difficulty.NORMAL);
+                                DungeonInstances.getInstance().getDungeonManager().spawnSavedMobs(templateRef, worldRef,
+                                        DungeonManager.Difficulty.NORMAL);
                             }
                         }, 20L); // 1 second delay
                         // teleport to configured spawn, not default world spawn
@@ -128,7 +132,8 @@ public class DungeonCommand implements CommandExecutor {
                         org.bukkit.entity.Entity tgt = getTargetEntity(player, 10);
                         if (tgt instanceof LivingEntity) {
                             String cur = ((LivingEntity) tgt).getPersistentDataContainer()
-                                    .get(DungeonManager.getLootAliasKey(), org.bukkit.persistence.PersistentDataType.STRING);
+                                    .get(DungeonManager.getLootAliasKey(),
+                                            org.bukkit.persistence.PersistentDataType.STRING);
                             player.sendMessage(PREFIX + "Current loot alias: " + (cur == null ? "<none>" : cur));
                         } else {
                             player.sendMessage(PREFIX + "You must be looking at a living entity to set an alias.");
@@ -170,7 +175,8 @@ public class DungeonCommand implements CommandExecutor {
                     if (args.length >= 4) {
                         StringBuilder sb = new StringBuilder();
                         for (int i = 3; i < args.length; i++) {
-                            if (i > 3) sb.append(",");
+                            if (i > 3)
+                                sb.append(",");
                             sb.append(args[i]);
                         }
                         player.sendMessage(PREFIX + ChatColor.GRAY + "(filter arguments: " + sb.toString() + ")");
@@ -203,7 +209,8 @@ public class DungeonCommand implements CommandExecutor {
 
                     player.sendMessage(PREFIX + ChatColor.YELLOW + "Saving...");
 
-                    // Ensure the world is saved with all entities (mobs with armor, attributes, NBT data, etc.)
+                    // Ensure the world is saved with all entities (mobs with armor, attributes, NBT
+                    // data, etc.)
                     World w = Bukkit.getWorld(worldNameToSave);
                     if (w != null) {
                         w.save();
@@ -227,13 +234,15 @@ public class DungeonCommand implements CommandExecutor {
                                 try {
                                     radius = Double.parseDouble(param);
                                 } catch (NumberFormatException nfe) {
-                                    player.sendMessage(PREFIX + ChatColor.RED + "Invalid radius value. Provide a number.");
+                                    player.sendMessage(
+                                            PREFIX + ChatColor.RED + "Invalid radius value. Provide a number.");
                                     return true;
                                 }
                             }
                         }
                         if (radius > 0) {
-                            player.sendMessage(PREFIX + ChatColor.GRAY + "Filtering mobs within " + radius + " blocks of you.");
+                            player.sendMessage(
+                                    PREFIX + ChatColor.GRAY + "Filtering mobs within " + radius + " blocks of you.");
                         }
                         if (minY != Double.NEGATIVE_INFINITY) {
                             player.sendMessage(PREFIX + ChatColor.GRAY + "Ignoring mobs below Y=" + minY + ".");
@@ -258,7 +267,7 @@ public class DungeonCommand implements CommandExecutor {
                     Bukkit.getScheduler().runTaskLater(DungeonInstances.getInstance(), () -> {
                         // DungeonInstances.getInstance().getDungeonManager().unloadDungeonInstance(worldToUnload);
                         player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
-                        player.sendMessage(PREFIX + ChatColor.GREEN + "Dungeon template '" 
+                        player.sendMessage(PREFIX + ChatColor.GREEN + "Dungeon template '"
                                 + worldToUnload.replace("editmode_", "") + "' has been saved successfully!");
                     }, 40L); // 2 secondes de délai pour s'assurer que tout est sauvegardé
                     break;
@@ -319,7 +328,8 @@ public class DungeonCommand implements CommandExecutor {
         if (subCommand.equals("instance")) {
             if (args.length < 2) {
                 player.sendMessage(PREFIX + ChatColor.YELLOW + "Usage: /dungeon instance <dungeon-name> [difficulty]");
-                player.sendMessage(PREFIX + ChatColor.GRAY + "Available difficulties: Beginner, Normal, Heroic, Mythic (default Normal)");
+                player.sendMessage(PREFIX + ChatColor.GRAY
+                        + "Available difficulties: Beginner, Normal, Heroic, Mythic (default Normal)");
                 return true;
             }
 
@@ -352,7 +362,8 @@ public class DungeonCommand implements CommandExecutor {
                 String diffName = difficulty.toString();
                 partyManager.broadcastToParty(party,
                         PARTY_PREFIX + ChatColor.GREEN + "Dungeon " + ChatColor.LIGHT_PURPLE + dungeonName
-                                + ChatColor.GREEN + " (" + diffName + ") has been started by " + ChatColor.AQUA + player.getName()
+                                + ChatColor.GREEN + " (" + diffName + ") has been started by " + ChatColor.AQUA
+                                + player.getName()
                                 + ChatColor.GREEN + "!");
                 partyManager.broadcastToParty(party,
                         PARTY_PREFIX + ChatColor.YELLOW + "Teleporting in 10 seconds...");
@@ -695,7 +706,8 @@ public class DungeonCommand implements CommandExecutor {
         if (!subCommand.equals("admin") && !subCommand.equals("instance") && !subCommand.equals("list")
                 && !subCommand.equals("leave") && !subCommand.equals("party")) {
             player.sendMessage("Unknown subcommand. Available subcommands:");
-            player.sendMessage("/dungeon instance <dungeon-name> [difficulty] - Create a dungeon instance (default Normal)");
+            player.sendMessage(
+                    "/dungeon instance <dungeon-name> [difficulty] - Create a dungeon instance (default Normal)");
             return true;
         }
 
@@ -719,6 +731,7 @@ public class DungeonCommand implements CommandExecutor {
 
         return true;
     }
+
     /**
      * Ray-trace from player's eyes and return the first living entity hit
      * within the given distance (excluding the player itself).

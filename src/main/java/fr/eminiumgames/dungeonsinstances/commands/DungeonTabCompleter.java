@@ -52,7 +52,7 @@ public class DungeonTabCompleter implements TabCompleter {
             if (templatesFolder.exists() && templatesFolder.isDirectory()) {
                 for (File file : templatesFolder.listFiles()) {
                     // On ignore .git
-                    if(file.getName().equals(".git")) {
+                    if (file.getName().equals(".git")) {
                         continue;
                     }
 
@@ -85,7 +85,7 @@ public class DungeonTabCompleter implements TabCompleter {
             if (templatesFolder.exists() && templatesFolder.isDirectory()) {
                 for (File file : templatesFolder.listFiles()) {
                     // On ignore .git
-                    if(file.getName().equals(".git")) {
+                    if (file.getName().equals(".git")) {
                         continue;
                     }
 

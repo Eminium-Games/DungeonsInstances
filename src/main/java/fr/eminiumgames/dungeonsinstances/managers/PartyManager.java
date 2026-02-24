@@ -238,12 +238,14 @@ public class PartyManager {
                 kicked.sendMessage(PREFIX + ChatColor.RED
                         + "You have been kicked from the party and teleported to your previous world.");
             } else {
-                kicked.sendMessage(PREFIX + ChatColor.RED + "You have been kicked from the party " + ChatColor.LIGHT_PURPLE
-                        + party.getName());
+                kicked.sendMessage(
+                        PREFIX + ChatColor.RED + "You have been kicked from the party " + ChatColor.LIGHT_PURPLE
+                                + party.getName());
             }
         }
 
-        broadcastToParty(party, PREFIX + ChatColor.AQUA + kickedName + ChatColor.YELLOW + " has been kicked from the party.");
+        broadcastToParty(party,
+                PREFIX + ChatColor.AQUA + kickedName + ChatColor.YELLOW + " has been kicked from the party.");
 
         if (party.isEmpty()) {
             parties.remove(party.getName());
