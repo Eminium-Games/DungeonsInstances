@@ -1,148 +1,144 @@
 # DungeonInstances
 
-Plugin Minecraft Spigot/Bukkit pour gérer des donjons instanciés, avec système de party, invitations cliquables, commandes d'administration et HUD scoreboard en jeu.
+A Spigot/Paper Minecraft plugin for managing instanced dungeons with party system, clickable invitations, admin commands and in-game scoreboard HUD.
 
---
+---
 
-## Présentation
+## Overview
 
-`DungeonInstances` permet de créer des mondes-donjon copiés depuis des templates, d'y inviter des joueurs en party, et d'afficher un scoreboard dynamique lorsque vous êtes dans une instance. Le plugin vise une administration simple (création/suppression/édition de templates, setspawn) et une UX conviviale (messages colorés, boutons cliquables pour accepter/refuser une invitation).
+**DungeonInstances** lets you create dungeon worlds copied from templates, invite players to parties, and display a dynamic scoreboard when inside an instance. The plugin aims for simple administration (create/delete/edit templates, set spawns) and friendly UX (colored messages, clickable buttons to accept/decline invitations).
 
-## Fonctions principales
-- Création d'instances basées sur des templates (dossiers sous `templates-dungeons/`).
-- Système de party avec invitations cliquables (`[Accepter]`, `[Refuser]`).
-- Commandes d'administration : charger/éditer/sauvegarder/purger des instances, définir des spawn points.
-- Scoreboard visible dans les mondes d'instance (`instance_<nom>_<uuid>`) affichant :
-  - Membres du party (leader marqué par `♛`, vous marqué par `★`).
-  - Flèches directionnelles indiquant la position relative des membres.
-  - Santé courante en couleur (vert/jaune/rouge).
-  - Membres hors-ligne affichés strikethrough.
+## Main Features
+- Instance creation based on templates (folders under `templates-dungeons/`).
+- Party system with clickable invitations (`[Accept]`, `[Decline]`).
+- Admin commands: load/edit/save/purge instances, define spawn points.
+- Scoreboard visible in instance worlds (`instance_<name>_<uuid>`) displaying:
+  - Party members (leader marked with `♛`, you marked with `★`).
+  - Directional arrows showing members' relative position.
+  - Current health in color (green/yellow/red).
+  - Offline members displayed with strikethrough.
 
 ## Installation
 
-1. Build :
+1. Build:
 
 ```bash
 cd /path/to/DungeonsInstances
 mvn clean package -DskipTests -T 1C
 ```
 
-ou utilisez le script `./build` si vous l'avez rendu exécutable.
+Or use the `./build` script if you made it executable.
 
-2. Déploiement : copiez le JAR généré dans le dossier `plugins/` de votre serveur Spigot/Paper :
+2. Deploy: copy the generated JAR to your Spigot/Paper server's `plugins/` folder:
 
 ```bash
 cp "target/Dungeon Instances-1.0.0.jar" /path/to/server/plugins/
 ```
 
-3. Redémarrez le serveur.
+3. Restart the server.
 
-## Structure des dossiers importants
-- `templates-dungeons/` : dossiers de templates (un dossier = un template de donjon). Si le dossier n'existe pas, le plugin créera automatiquement un répertoire et y installera le donjon par défaut *manaria* depuis son archive interne.
-- `plugins/DungeonInstances/spawnPoints.json` : points de spawn définis via `/dungeon admin setspawn`.
+## Important Folder Structure
+- `templates-dungeons/` – template folders (one folder = one dungeon template). If the folder doesn't exist, the plugin automatically creates it and installs the default *manaria* dungeon from its internal archive.
+- `plugins/DungeonInstances/spawnPoints.json` – spawn points set via `/dungeon admin setspawn`.
 
-## Commandes
+## Commands
 
-Toutes les commandes sont sous `/dungeon`.
+All commands are under `/dungeon`.
 
-- `/dungeon instance <template> [difficulté]`
-  - Crée une instance depuis le template avec l'un des niveaux de difficulté suivants : **Débutant**, **Normal** (par défaut), **Héroïque**, **Mythique**.
-    La difficulté applique des multiplicateurs sur la vie, les dégâts et l'armure des créatures dérivées du template.
-  - Le joueur (chef de party) et ses membres reçoivent un message et sont téléportés après quelques secondes.
+- `/dungeon instance <template> [difficulty]`
+  - Creates an instance from the template with one of these difficulty levels: **Beginner**, **Normal** (default), **Heroic**, **Mythic**.
+    Difficulty applies multipliers to creature health, damage and armor.
+  - The player (party leader) and members receive a message and are teleported after a few seconds.
 
 - `/dungeon leave`
-  - Quitte l'instance et restaure l'état normal.
+  - Leaves the instance and restores normal state.
 
 - `/dungeon list`
-  - Liste les templates disponibles et/ou instances actives.
+  - Lists available templates and/or active instances.
 
-- `/dungeon admin <sub>` (permission requise : `dungeon.admin`)
-  - `edit <template>` : crée/ouvre une instance d'édition pour un template.
-  - `save <instance>` : sauvegarde une instance modifiée (utilisé pour templates d'édition).
-  - `purge <instance>` : supprime et décharge une instance vide.
-  - `setspawn <template>` : enregistre la position actuelle du joueur comme spawn pour ce template (sauvegardé dans `spawnPoints.json`).
+- `/dungeon admin <sub>` (requires permission: `dungeon.admin`)
+  - `edit <template>` – creates/opens an edit instance for a template.
+  - `save <instance>` – saves a modified instance (used for edit templates).
+  - `purge <instance>` – deletes and unloads an empty instance.
+  - `setspawn <template>` – registers your current position as spawn for this template (saved in `spawnPoints.json`).
+  - `alias <alias>` – assigns or shows the loot pool alias for a mob you're looking at; use `none` to clear.
+  - `reloadloot` – reloads loot tables from `lootTables.json`.
 
 - `/dungeon party <sub>`
-- `/dungeon party <sub>`
-  - `create <name?>` : crée un nouveau party. Si aucun nom n'est fourni, le plugin utilise le pseudo du créateur (les espaces sont remplacés par des underscores). Les noms doivent être uniques — la création échouera si le nom existe déjà.
-  - `invite <player>` : invite un joueur (envoi un message cliquable `[Accepter]`/`[Refuser]`).
-  - `accept` : accepte la dernière invitation. L'accept provoque automatiquement la sortie du joueur de toute autre party existante avant de rejoindre la nouvelle.
-  - `decline` : décline la dernière invitation.
-  - `leave` : quitte le party. Si le joueur se trouve dans une instance (`instance_...`), il sera téléporté automatiquement vers son monde précédent (si connu) ou vers le spawn principal.
-  - `kick <player>` : (leader uniquement) expulse un membre du groupe. Si le membre expulsé se trouve dans une instance, il est téléporté vers son monde précédent.
-  - `disband` : (leader uniquement) dissout le groupe — notifie tous les membres, supprime les invitations en attente et téléporte les membres présents en instance vers leur monde précédent.
-  - `list` : liste les parties / membres.
-  - `members` : affiche les membres du party (Leader/Vous, online/offline).
+  - `create [name]` – creates a new party. If no name is given, the plugin uses the creator's username (spaces replaced with underscores). Names must be unique — creation fails if the name exists.
+  - `invite <player>` – invites a player (sends clickable `[Accept]`/`[Decline]` message).
+  - `accept` – accepts the last invitation. Automatically leaves any existing party before joining the new one.
+  - `decline` – declines the last invitation.
+  - `leave` – leaves the party. If the player is in an instance (`instance_...`), they are teleported to their previous world (if known) or main spawn.
+  - `kick <player>` – (leader only) removes a member. If the kicked member is in an instance, they are teleported to their previous world.
+  - `disband` – (leader only) dissolves the group — notifies all members, clears pending invitations and teleports members in instances to their previous world.
+  - `list` – lists parties/members.
+  - `members` – shows party members (Leader/You, online/offline).
 
-Notes :
-- Les invitations utilisent l'API TextComponent pour fournir des boutons cliquables côté client.
-- Les commandes d'administration sont masquées aux joueurs sans permission.
+Notes:
+- Invitations use TextComponent API to provide clickable buttons on the client.
+- Admin commands are hidden from players without permission.
 
 ## Scoreboard (HUD)
 
-- Le scoreboard s'active automatiquement pour les joueurs présents dans un monde dont le nom commence par `instance_`.
-- Il affiche en sidebar :
-  - Le nom du donjon (extrait du nom du monde `instance_<nom>_<uuid>`),
-  - Les membres du party avec statut santé, direction relative, leader/star markers,
-  - Séparateurs uniformes (header/footer) de couleur cohérente.
+- The scoreboard activates automatically for players in a world whose name starts with `instance_`.
+- It displays in the sidebar:
+  - The dungeon name (extracted from world name `instance_<name>_<uuid>`).
+  - Party members with health status, relative direction, leader/star markers.
+  - Uniform separators (header/footer) in consistent color.
 
-## Spawn points
+## Spawn Points
 
-- Définissez un spawn par template avec :
+- Set a spawn per template with:
 
 ```
 /dungeon admin setspawn <template>
 ```
 
-- Les spawn sont persistés dans `plugins/DungeonInstances/spawnPoints.json`.
+- Spawns are persisted in `plugins/DungeonInstances/spawnPoints.json`.
 
 ## Templates & Instances
 
-- Placez vos templates de donjon dans `templates-dungeons/<nom_template>/`.
-- Les instances sont créées par copie et chargées sous un nom `instance_<nom_template>_<uuid>`.
-- Les instances vides sont automatiquement déchargées et supprimées.
+- Place your dungeon templates in `templates-dungeons/<template_name>/`.
+- Instances are created by copying and loaded under `instance_<template_name>_<uuid>`.
+- Empty instances are automatically unloaded and deleted.
 
 ## Permissions
 
-- `dungeon.admin` : accès aux commandes d'administration (`/dungeon admin ...`).
+- `dungeon.admin` – access to admin commands (`/dungeon admin ...`).
 
-Autres commandes n'ont pas de permissions spécifiques par défaut (vous pouvez ajouter des checks si nécessaire).
+Other commands have no specific permissions by default (you can add checks if needed).
 
-## Dépannage
+## Troubleshooting
 
-- Si une instance ne se charge pas, vérifiez les permissions d'écriture sur le dossier world container (copie de dossier template).
-- Si le scoreboard n'apparaît pas : assurez-vous d'être dans un monde `instance_...` et d'appartenir à un party.
-- Si les noms de joueurs hors-ligne s'affichent mal, le plugin utilise `Bukkit.getOfflinePlayer(UUID).getName()` comme fallback.
+- If an instance fails to load, check write permissions on the world container folder (template folder copy).
+- If the scoreboard doesn't appear: ensure you're in an `instance_...` world and belong to a party.
+- If offline player names display incorrectly, the plugin uses `Bukkit.getOfflinePlayer(UUID).getName()` as fallback.
 
-## Loot tables personnalisées
+## Custom Loot Tables
 
-La version récente de DungeonInstances introduit un système de loot tables par donjon/difficulté.  Chaque mob peut être marqué
-avec un **alias de pool** qui détermine la table de butin utilisée lorsque le mob meurt dans
-une instance.  L'alias est stocké en NBT (PersistentDataContainer) et est conservé lors des
-sauvegardes/chargements de mob.
+DungeonInstances includes a loot table system per dungeon/difficulty. Each mob can be marked with a **pool alias** that determines the loot table used when the mob dies in an instance. The alias is stored in NBT (PersistentDataContainer) and persists across saves/loads.
 
 ### Configuration
 
-Le fichier de configuration se trouve dans `plugins/DungeonInstances/lootTables.json`.  Si le
-module est chargé pour la première fois, un fichier vide `{}` est créé afin que les
-administrateurs puissent le remplir à la main.  La structure attendue est la suivante :
+The config file is at `plugins/DungeonInstances/lootTables.json`. On first load, an empty `{}` is created so admins can populate it manually. Expected structure:
 
 ```json
 {
-  "<nom_template>": {
+  "<template_name>": {
     "<difficulty>": {
       "<alias>": {
-        "iterations": <nombre de lancers>,
+        "iterations": <number of rolls>,
         "loots": [
           {
             "item": "minecraft:diamond_sword",
-            "nbt": { "item_name": "Épée légendaire" },
+            "nbt": { "item_name": "Legendary Sword" },
             "count": 1,
             "chance": 0.1
           },
           {
             "item": "minecraft:iron_nugget",
-            "nbt": { "item_name": "Écu" },
+            "nbt": { "item_name": "Shield" },
             "count": 1,
             "chance": 0.4
           }
@@ -153,8 +149,7 @@ administrateurs puissent le remplir à la main.  La structure attendue est la su
 }
 ```
 
-Pour illustrer l’usage des quatre difficultés, voici un exemple complet pour
-un template `manaria` et un alias `default` :
+Complete example for template `manaria` with `default` alias across all four difficulties:
 
 ```json
 {
@@ -202,53 +197,45 @@ un template `manaria` et un alias `default` :
 }
 ```
 
-Dans cet exemple la difficulté croissante augmente à la fois le nombre
-`iterations` et les chances de gagner des objets précieux ; le lecteur pourra
-bien sûr adapter ces chiffres à ses propres besoins.
+In this example, increasing difficulty raises both `iterations` and drop chances; adjust these values to suit your needs.
 
+### Loot Table Fields
 
-- `iterations` : nombre de fois où l'on visite la pool ; chaque itération tire un item
-  au hasard parmi la liste `loots`.
-- `loots` : tableau d'entrées possibles. Pour chaque entrée le champ `chance` est comparer
-  à un réel aléatoire (`0.0`–`1.0`) ; si le tirage est réussi, l'item est ajouté aux drops.
-- `item` : identifiant de matériau Bukkit/Spigot (`DIAMOND_SWORD`, `IRON_NUGGET`, etc.).
-- `nbt` : mappage libre permettant de définir un nom (`item_name`), une lore, etc.  Seules
-  quelques clés simples sont gérées pour l'instant (voir code source).
-- `count` : quantité d'items à générer lorsque l'entrée est choisie.
+- `iterations` – number of times the pool is visited; each iteration randomly picks an item from `loots`.
+- `loots` – array of possible entries. For each entry, `chance` is compared to a random value (`0.0`–`1.0`); if the roll succeeds, the item is added to drops.
+- `item` – Bukkit/Spigot material ID (`DIAMOND_SWORD`, `IRON_NUGGET`, etc.).
+- `nbt` – free mapping for item name (`item_name`), lore, etc. Only simple keys are supported currently (see source code).
+- `count` – quantity of items to generate when the entry is selected.
 
-### Assignation d'alias
+### Assigning Aliases
 
-Pendant l'édition d'un template vous pouvez regarder un mob et
-exécuter :
+While editing a template, look at a mob and run:
 
 ```
 /dungeon admin alias <alias>
 ```
 
-Le plugin indiquera l'alias actuel si aucun argument n'est fourni.  Pour effacer l'alias,
-utilisez `none` :
+The plugin shows the current alias if no argument is given. To clear the alias, use `none`:
 
 ```
 /dungeon admin alias none
 ```
 
-L'alias est sauvegardé avec le mob et restauré automatiquement dans les instances.
+The alias is saved with the mob and automatically restored in instances.
 
-### Reload de la configuration
+### Reloading Configuration
 
-Après avoir édité `lootTables.json` sur le disque, chargez les changements en jeu avec :
+After editing `lootTables.json` on disk, reload changes in-game with:
 
 ```
 /dungeon admin reloadloot
 ```
 
-### Comportement en jeu
+### In-Game Behavior
 
-Lorsqu'un mob portant un alias meurt dans une instance, les drops vanilla sont supprimés et
-remplacés par les objets calculés à partir de la pool correspondante (template +
-difficulté + alias).  Si aucune table n'est trouvée, le comportement vanilla reste inchangé.
+When a mob with an alias dies in an instance, vanilla drops are removed and replaced with items calculated from the matching pool (template + difficulty + alias). If no table is found, vanilla behavior is unchanged.
 
-## Personnalisation & suggestions
+## Customization & Suggestions
 
-- Vous pouvez modifier la fréquence de mise à jour du scoreboard (`DungeonScoreboardManager`) et les formats de messages dans le code.
-- Améliorations possibles : traductions multi-langues, configuration via `config.yml`, options pour cacher certains éléments du HUD.
+- You can modify the scoreboard update frequency (`DungeonScoreboardManager`) and message formats in the code.
+- Possible improvements: multi-language support, config via `config.yml`, options to hide certain HUD elements.
