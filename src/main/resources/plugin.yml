@@ -3,14 +3,14 @@ version: 1.0.0
 main: fr.eminiumgames.dungeonsinstances.DungeonInstances
 api: '1.19'
 api-version: '1.19'
-description: Plugin pour gérer les instances de donjons dans Minecraft
+description: Plugin to manage dungeon instances in Minecraft
 authors:
   - fox3000foxy
 commands:
   dungeon:
-    description: Commande principale pour gérer les donjons et les groupes.
-    usage: /dungeon <sous-commande> (e.g. /dungeon instance <nom> [difficulté])
+    description: Main command for managing dungeons and parties.
+    usage: /dungeon <sub-command> (e.g. /dungeon instance <name> [difficulty])
 permissions:
   dungeon.admin:
-    description: Permission d'utiliser les commandes d'administration des donjons.
+    description: Permission to use dungeon administration commands.
     default: op

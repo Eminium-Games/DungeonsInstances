@@ -60,11 +60,11 @@ public class PartyManager {
             return false;
         }
         if (party.hasMember(target)) {
-            inviter.sendMessage(PREFIX + ChatColor.RED + target.getName() + " est déjà dans le groupe.");
+            inviter.sendMessage(PREFIX + ChatColor.RED + target.getName() + " is already in the party.");
             return false;
         }
         if (pendingInvites.containsKey(target.getUniqueId())) {
-            inviter.sendMessage(PREFIX + ChatColor.RED + target.getName() + " a déjà une invitation en attente.");
+            inviter.sendMessage(PREFIX + ChatColor.RED + target.getName() + " already has a pending invitation.");
             return false;
         }
 
@@ -72,21 +72,21 @@ public class PartyManager {
 
         // Send clickable invite message to target
         TextComponent message = new TextComponent(
-                PREFIX + ChatColor.AQUA + inviter.getName() + ChatColor.GREEN + " vous invite à rejoindre le groupe "
-                        + ChatColor.LIGHT_PURPLE + party.getName() + ChatColor.GREEN + " !");
+                PREFIX + ChatColor.AQUA + inviter.getName() + ChatColor.GREEN + " invites you to join the party "
+                        + ChatColor.LIGHT_PURPLE + party.getName() + ChatColor.GREEN + "!");
         target.spigot().sendMessage(message);
 
-        TextComponent acceptBtn = new TextComponent(ChatColor.GREEN + "" + ChatColor.BOLD + "[Accepter]");
+        TextComponent acceptBtn = new TextComponent(ChatColor.GREEN + "" + ChatColor.BOLD + "[Accept]");
         acceptBtn.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dungeon party accept"));
         acceptBtn.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new ComponentBuilder(ChatColor.GREEN + "Cliquez pour accepter l'invitation").create()));
+                new ComponentBuilder(ChatColor.GREEN + "Click to accept the invitation").create()));
 
         TextComponent space = new TextComponent("  ");
 
-        TextComponent declineBtn = new TextComponent(ChatColor.RED + "" + ChatColor.BOLD + "[Refuser]");
+        TextComponent declineBtn = new TextComponent(ChatColor.RED + "" + ChatColor.BOLD + "[Decline]");
         declineBtn.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dungeon party decline"));
         declineBtn.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new ComponentBuilder(ChatColor.RED + "Cliquez pour refuser l'invitation").create()));
+                new ComponentBuilder(ChatColor.RED + "Click to decline the invitation").create()));
 
         TextComponent buttons = new TextComponent("");
         buttons.addExtra(acceptBtn);
@@ -102,8 +102,8 @@ public class PartyManager {
             // Sound enum may differ across versions; fail silently
         }
         // Notify the party
-        broadcastToParty(party, PREFIX + ChatColor.AQUA + inviter.getName() + ChatColor.YELLOW + " a invité "
-                + ChatColor.AQUA + target.getName() + ChatColor.YELLOW + " dans le groupe.");
+        broadcastToParty(party, PREFIX + ChatColor.AQUA + inviter.getName() + ChatColor.YELLOW + " has invited "
+                + ChatColor.AQUA + target.getName() + ChatColor.YELLOW + " to the party.");
 
         return true;
     }
@@ -122,7 +122,7 @@ public class PartyManager {
         leaveParty(player, false);
         party.addMember(player);
         broadcastToParty(party,
-                PREFIX + ChatColor.AQUA + player.getName() + ChatColor.GREEN + " a rejoint le groupe !");
+                PREFIX + ChatColor.AQUA + player.getName() + ChatColor.GREEN + " has joined the party!");
         saveParties();
         return true;
     }
@@ -135,7 +135,7 @@ public class PartyManager {
         Party party = parties.get(partyName);
         if (party != null) {
             broadcastToParty(party,
-                    PREFIX + ChatColor.AQUA + player.getName() + ChatColor.RED + " a refusé l'invitation.");
+                    PREFIX + ChatColor.AQUA + player.getName() + ChatColor.RED + " has declined the invitation.");
         }
         return true;
     }
@@ -160,7 +160,7 @@ public class PartyManager {
             return false;
         }
         party.removeMember(player);
-        broadcastToParty(party, PREFIX + ChatColor.AQUA + player.getName() + ChatColor.RED + " a quitté le groupe.");
+        broadcastToParty(party, PREFIX + ChatColor.AQUA + player.getName() + ChatColor.RED + " has left the party.");
 
         // If requested, teleport the player back when leaving while in an instance
         if (teleportBack) {
@@ -195,7 +195,7 @@ public class PartyManager {
         List<String> partyList = new ArrayList<>();
         for (Party party : parties.values()) {
             partyList.add(ChatColor.LIGHT_PURPLE + party.getName() + ChatColor.GRAY + " (" + party.getMemberCount()
-                    + " joueurs)");
+                    + " players)");
         }
         return partyList;
     }
@@ -236,14 +236,14 @@ public class PartyManager {
                     kicked.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
                 }
                 kicked.sendMessage(PREFIX + ChatColor.RED
-                        + "Vous avez été expulsé du groupe et téléporté vers votre monde précédent.");
+                        + "You have been kicked from the party and teleported to your previous world.");
             } else {
-                kicked.sendMessage(PREFIX + ChatColor.RED + "Vous avez été expulsé du groupe " + ChatColor.LIGHT_PURPLE
+                kicked.sendMessage(PREFIX + ChatColor.RED + "You have been kicked from the party " + ChatColor.LIGHT_PURPLE
                         + party.getName());
             }
         }
 
-        broadcastToParty(party, PREFIX + ChatColor.AQUA + kickedName + ChatColor.YELLOW + " a été expulsé du groupe.");
+        broadcastToParty(party, PREFIX + ChatColor.AQUA + kickedName + ChatColor.YELLOW + " has been kicked from the party.");
 
         if (party.isEmpty()) {
             parties.remove(party.getName());
@@ -275,10 +275,10 @@ public class PartyManager {
                         member.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
                     }
                     member.sendMessage(PREFIX + ChatColor.RED
-                            + "Le groupe a été dissous et vous avez été téléporté vers votre monde précédent.");
+                            + "The party has been disbanded and you have been teleported to your previous world.");
                 } else {
-                    member.sendMessage(PREFIX + ChatColor.RED + "Le groupe " + ChatColor.LIGHT_PURPLE + party.getName()
-                            + ChatColor.RED + " a été dissous.");
+                    member.sendMessage(PREFIX + ChatColor.RED + "The party " + ChatColor.LIGHT_PURPLE + party.getName()
+                            + ChatColor.RED + " has been disbanded.");
                 }
             }
         }

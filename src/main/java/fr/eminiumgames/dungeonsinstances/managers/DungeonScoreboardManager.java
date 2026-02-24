@@ -74,7 +74,7 @@ public class DungeonScoreboardManager {
 
         // Determine dungeon name from world name (instance_<dungeon>_<uuid>)
         String worldName = player.getWorld().getName();
-        String dungeonName = "Donjon";
+        String dungeonName = "Dungeon";
         if (worldName.startsWith("instance_")) {
             int start = "instance_".length();
             int lastUnderscore = worldName.lastIndexOf('_');
@@ -87,14 +87,14 @@ public class DungeonScoreboardManager {
 
         @SuppressWarnings("deprecation")
         Objective objective = board.registerNewObjective("dungeon", "dummy",
-                ChatColor.DARK_PURPLE + "✦ " + ChatColor.BOLD + "Donjon" + ChatColor.RESET + ChatColor.DARK_PURPLE
+                ChatColor.DARK_PURPLE + "✦ " + ChatColor.BOLD + "Dungeon" + ChatColor.RESET + ChatColor.DARK_PURPLE
                         + " ✦");
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         Set<UUID> members = party.getMembers();
         int score = members.size() + 3; // +3 to account for difficulty line
 
-        objective.getScore(ChatColor.GRAY + "Donjon: " + ChatColor.WHITE + dungeonName).setScore(score--);
+        objective.getScore(ChatColor.GRAY + "Dungeon: " + ChatColor.WHITE + dungeonName).setScore(score--);
         // show difficulty on second row
         DungeonManager.Difficulty diff = DungeonInstances.getInstance().getDungeonManager()
                 .getDifficultyForInstance(worldName);
@@ -117,7 +117,7 @@ public class DungeonScoreboardManager {
                 break;
         }
         String diffLine = diffColor + (bold ? ChatColor.BOLD.toString() : "") + diff.toString();
-        objective.getScore(ChatColor.GRAY + "Difficulté: " + diffLine).setScore(score--);
+        objective.getScore(ChatColor.GRAY + "Difficulty: " + diffLine).setScore(score--);
         // Header separator (uniform color)
         objective.getScore(ChatColor.DARK_GRAY + "────────────").setScore(score--);
 
