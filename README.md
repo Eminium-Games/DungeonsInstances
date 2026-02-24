@@ -61,7 +61,7 @@ All commands are under `/dungeon`.
   - `save <instance>` – saves a modified instance (used for edit templates).
   - `purge <instance>` – deletes and unloads an empty instance.
   - `setspawn <template>` – registers your current position as spawn for this template (saved in `spawnPoints.json`).
-  - `alias <alias>` – assigns or shows the loot pool alias for a mob you're looking at; use `none` to clear.
+  - `alias <alias>` – assigns or shows the loot pool alias for a mob you're looking at; this alias determines which loot pool/table will be used when that mob drops items in an instance; use `none` to clear.
   - `reloadloot` – reloads loot tables from `lootTables.json`.
 
 - `/dungeon party <sub>`
@@ -214,6 +214,8 @@ While editing a template, look at a mob and run:
 ```
 /dungeon admin alias <alias>
 ```
+
+The alias you choose defines the **loot pool** that will be consulted when this mob dies in an instance (template + difficulty + alias form the lookup key).
 
 The plugin shows the current alias if no argument is given. To clear the alias, use `none`:
 
