@@ -17,10 +17,21 @@ if ! java -version 2>&1 | grep -q '17\.'; then
   java -version
 fi
 
-# --- 2. Maven ---
+# --- 2. Maven (auto-install si absent) ---
+MVN_CMD="mvn"
 if ! command -v mvn >/dev/null 2>&1; then
-  echo "[ERREUR] 'mvn' introuvable. Installez Maven 3.9+."
-  exit 1
+  if [ -x "test-server/.tools/maven/apache-maven-3.9.9/bin/mvn" ]; then
+    MVN_CMD="test-server/.tools/maven/apache-maven-3.9.9/bin/mvn"
+    echo "[INFO] Maven local detecte : $MVN_CMD"
+  else
+    echo "[INFO] Maven introuvable, telechargement de Maven 3.9.9 en local..."
+    mkdir -p test-server/.tools/maven
+    curl -L -o test-server/.tools/maven.zip \
+      "https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip"
+    unzip -q -o test-server/.tools/maven.zip -d test-server/.tools/maven
+    rm -f test-server/.tools/maven.zip
+    MVN_CMD="test-server/.tools/maven/apache-maven-3.9.9/bin/mvn"
+  fi
 fi
 
 # --- 3. Paper 1.20.1 build 196 ---
@@ -32,7 +43,7 @@ fi
 
 # --- 4. Build plugin ---
 echo "[INFO] Build du plugin..."
-mvn clean package -DskipTests
+"$MVN_CMD" clean package -DskipTests
 
 # --- 5. Copie vers test-server/plugins ---
 mkdir -p test-server/plugins

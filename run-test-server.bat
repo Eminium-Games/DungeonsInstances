@@ -25,14 +25,27 @@ if errorlevel 1 (
     java -version
 )
 
-REM --- 2. Verifier Maven ---
+REM --- 2. Maven (auto-install si absent) ---
+set "MVN_CMD=mvn"
 where mvn >nul 2>&1
 if errorlevel 1 (
-    echo [ERREUR] 'mvn' introuvable dans le PATH.
-    echo Installez Maven 3.9+ : https://maven.apache.org/download.cgi
-    echo Puis relancez ce script.
-    pause
-    exit /b 1
+    if exist "test-server\.tools\maven\apache-maven-3.9.9\bin\mvn.cmd" (
+        set "MVN_CMD=test-server\.tools\maven\apache-maven-3.9.9\bin\mvn.cmd"
+        echo [INFO] Maven local detecte : !MVN_CMD!
+    ) else (
+        echo [INFO] Maven introuvable, telechargement de Maven 3.9.9 en local...
+        if not exist "test-server\.tools\maven" mkdir "test-server\.tools\maven"
+        powershell -Command "Invoke-WebRequest -Uri 'https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip' -OutFile 'test-server\.tools\maven.zip'"
+        if errorlevel 1 (
+            echo [ERREUR] Echec du telechargement de Maven.
+            echo Installez Maven 3.9+ manuellement : https://maven.apache.org/download.cgi
+            pause
+            exit /b 1
+        )
+        powershell -Command "Expand-Archive -Path 'test-server\.tools\maven.zip' -DestinationPath 'test-server\.tools\maven' -Force"
+        del "test-server\.tools\maven.zip"
+        set "MVN_CMD=test-server\.tools\maven\apache-maven-3.9.9\bin\mvn.cmd"
+    )
 )
 
 REM --- 3. Telecharger Paper 1.20.1 (build 196) si manquant ---
@@ -48,7 +61,7 @@ if not exist "test-server\paper.jar" (
 
 REM --- 4. Build du plugin ---
 echo [INFO] Build du plugin avec Java 17...
-call mvn clean package -DskipTests
+call "%MVN_CMD%" clean package -DskipTests
 if errorlevel 1 (
     echo [ERREUR] Le build a echoue.
     pause
