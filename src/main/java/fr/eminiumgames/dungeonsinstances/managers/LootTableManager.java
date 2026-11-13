@@ -367,25 +367,44 @@ public class LootTableManager {
         if (nbtMap == null || nbtMap.isEmpty())
             return stack;
         try {
-            // reflection to avoid compile-time NMS dependency
-            Class<?> craftStackClass = Class.forName("org.bukkit.craftbukkit.v1_21_R2.inventory.CraftItemStack");
+            // reflection to avoid compile-time NMS dependency; resolve the
+            // CraftBukkit package dynamically so the same code runs on 1.20.1
+            // (v1_20_R1) and newer versions without hardcoding.
+            String cbPackage = Bukkit.getServer().getClass().getPackage().getName();
+            Class<?> craftStackClass = Class.forName(cbPackage + ".inventory.CraftItemStack");
             Method toNms = craftStackClass.getMethod("asNMSCopy", ItemStack.class);
             Object nms = toNms.invoke(null, stack);
 
             Class<?> nmsStackClass = nms.getClass();
             Method hasTag = nmsStackClass.getMethod("hasTag");
             Method getTag = nmsStackClass.getMethod("getTag");
-            Class<?> compoundTagClass = Class.forName("net.minecraft.nbt.CompoundTag");
+            Class<?> compoundTagClass;
+            try {
+                compoundTagClass = Class.forName("net.minecraft.nbt.CompoundTag");
+            } catch (ClassNotFoundException e) {
+                compoundTagClass = Class.forName("net.minecraft.nbt.NBTTagCompound");
+            }
             Object tag = (Boolean) hasTag.invoke(nms) ? getTag.invoke(nms)
                     : compoundTagClass.getConstructor().newInstance();
 
-            Class<?> tagClass = Class.forName("net.minecraft.nbt.Tag");
+            Class<?> tagClass;
+            try {
+                tagClass = Class.forName("net.minecraft.nbt.Tag");
+            } catch (ClassNotFoundException e) {
+                // very old obfuscated name, defensive
+                tagClass = Class.forName("net.minecraft.nbt.NBTBase");
+            }
             Method aMethod = tagClass.getMethod("a", Object.class);
 
             // merge provided map entries into tag
             for (Map.Entry<String, Object> e : nbtMap.entrySet()) {
+                // skip 1.20.5+ components map on 1.20.1 where it has no meaning;
+                // display name / lore are applied via Bukkit meta below.
+                if ("components".equals(e.getKey())) {
+                    continue;
+                }
                 Object valueTag = aMethod.invoke(null, e.getValue());
-                Method put = tag.getClass().getMethod("put", String.class, Class.forName("net.minecraft.nbt.Tag"));
+                Method put = tag.getClass().getMethod("put", String.class, tagClass);
                 put.invoke(tag, e.getKey(), valueTag);
             }
 
@@ -415,7 +434,9 @@ public class LootTableManager {
                 List<String> lore = (List<String>) entry.nbt.get("lore");
                 meta.setLore(lore);
             }
-            meta.setItemName(compName);
+            // 1.20.1 API: ItemMeta#setItemName does not exist yet (added in
+            // 1.20.5 with the component rewrite); use the legacy display name.
+            meta.setDisplayName(compName);
             stack.setItemMeta(meta);
         }
         return stack;

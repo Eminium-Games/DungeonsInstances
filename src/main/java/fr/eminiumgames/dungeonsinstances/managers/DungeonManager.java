@@ -502,6 +502,31 @@ public class DungeonManager {
     // NBT helpers using reflection to avoid compile-time NMS dependency
     private static final Map<Class<?>, java.lang.reflect.Method> saveMethodCache = new HashMap<>();
 
+    /**
+     * Resolve the NBT compound class on both Mojang-mapped (Paper 1.20.1:
+     * {@code CompoundTag}) and obfuscated (Spigot 1.20.1: {@code NBTTagCompound})
+     * servers.
+     */
+    private static Class<?> getNbtCompoundClass() throws ClassNotFoundException {
+        try {
+            return Class.forName("net.minecraft.nbt.CompoundTag");
+        } catch (ClassNotFoundException e) {
+            return Class.forName("net.minecraft.nbt.NBTTagCompound");
+        }
+    }
+
+    /**
+     * Resolve the Mojangson parser class ({@code MojangParser} on modern
+     * mappings, {@code MojangsonParser} on older ones).
+     */
+    private static Class<?> getNbtParserClass() throws ClassNotFoundException {
+        try {
+            return Class.forName("net.minecraft.nbt.MojangParser");
+        } catch (ClassNotFoundException e) {
+            return Class.forName("net.minecraft.nbt.MojangsonParser");
+        }
+    }
+
     private String serializeEntityNBT(org.bukkit.entity.Entity e) {
         try {
             Object craftEntity = e.getClass().getMethod("getHandle").invoke(e);
@@ -509,7 +534,7 @@ public class DungeonManager {
 
             // check cache for previously discovered method
             java.lang.reflect.Method saveMethod = saveMethodCache.get(nmsEntityClass);
-            Class<?> nbtClass = Class.forName("net.minecraft.nbt.NBTTagCompound");
+            Class<?> nbtClass = getNbtCompoundClass();
             Object nbtInstance = nbtClass.getConstructor().newInstance();
 
             if (saveMethod == null) {
@@ -605,8 +630,8 @@ public class DungeonManager {
         // parsing succeeds we return immediately; otherwise fall through to the
         // map-based fallback.
         try {
-            Class<?> nbtClass = Class.forName("net.minecraft.nbt.NBTTagCompound");
-            Class<?> parserClass = Class.forName("net.minecraft.nbt.MojangsonParser");
+            Class<?> nbtClass = getNbtCompoundClass();
+            Class<?> parserClass = getNbtParserClass();
             java.lang.reflect.Method parseMethod = parserClass.getMethod("parse", String.class);
             Object tag = parseMethod.invoke(null, nbt);
             Object craftEntity = e.getClass().getMethod("getHandle").invoke(e);
@@ -707,9 +732,10 @@ public class DungeonManager {
                 for (Map.Entry<?, ?> entry : attrs.entrySet()) {
                     if (entry.getKey() instanceof String && entry.getValue() instanceof Number) {
                         try {
-                            @SuppressWarnings("deprecation")
-                            org.bukkit.attribute.Attribute attr = org.bukkit.attribute.Attribute
-                                    .valueOf((String) entry.getKey());
+                            org.bukkit.attribute.Attribute attr = resolveAttribute((String) entry.getKey());
+                            if (attr == null) {
+                                continue;
+                            }
                             org.bukkit.attribute.AttributeInstance ai = le.getAttribute(attr);
                             if (ai != null) {
                                 ai.setBaseValue(((Number) entry.getValue()).doubleValue());
@@ -721,6 +747,43 @@ public class DungeonManager {
             }
         }
         // more fields can be added as needed
+    }
+
+    /**
+     * Resolve an attribute name tolerating both 1.20 (GENERIC_*) and 1.21+
+     * (MAX_HEALTH, ATTACK_DAMAGE, ...) conventions so that mob files saved on
+     * newer versions still load on 1.20.1.
+     */
+    private static org.bukkit.attribute.Attribute resolveAttribute(String name) {
+        if (name == null) {
+            return null;
+        }
+        try {
+            return org.bukkit.attribute.Attribute.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            // 1.21 renamed HORSE_JUMP_STRENGTH to JUMP_STRENGTH
+            if ("JUMP_STRENGTH".equals(name)) {
+                try {
+                    return org.bukkit.attribute.Attribute.valueOf("HORSE_JUMP_STRENGTH");
+                } catch (IllegalArgumentException e2) {
+                    return null;
+                }
+            }
+            // try with GENERIC_ prefix (1.21 -> 1.20)
+            try {
+                return org.bukkit.attribute.Attribute.valueOf("GENERIC_" + name);
+            } catch (IllegalArgumentException e2) {
+                // try stripping GENERIC_ prefix (1.20 -> 1.21 files, defensive)
+                if (name.startsWith("GENERIC_")) {
+                    try {
+                        return org.bukkit.attribute.Attribute.valueOf(name.substring("GENERIC_".length()));
+                    } catch (IllegalArgumentException e3) {
+                        return null;
+                    }
+                }
+                return null;
+            }
+        }
     }
 
     /**
@@ -736,14 +799,14 @@ public class DungeonManager {
         if (ent == null || diff == null || diff == Difficulty.NORMAL) {
             // still remove any existing difficulty modifiers so that an entity
             // respawned in the same world doesn't retain them accidentally
-            removeDifficultyModifiers(ent, org.bukkit.attribute.Attribute.MAX_HEALTH);
-            removeDifficultyModifiers(ent, org.bukkit.attribute.Attribute.ATTACK_DAMAGE);
-            removeDifficultyModifiers(ent, org.bukkit.attribute.Attribute.ARMOR);
+            removeDifficultyModifiers(ent, org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH);
+            removeDifficultyModifiers(ent, org.bukkit.attribute.Attribute.GENERIC_ATTACK_DAMAGE);
+            removeDifficultyModifiers(ent, org.bukkit.attribute.Attribute.GENERIC_ARMOR);
             return;
         }
 
         // helper lambda to update a single attribute
-        @SuppressWarnings({ "deprecation", "removal" })
+        @SuppressWarnings({ "deprecation" })
         java.util.function.BiConsumer<org.bukkit.attribute.Attribute, Double> updater = (attr, mul) -> {
             org.bukkit.attribute.AttributeInstance inst = ent.getAttribute(attr);
             if (inst == null) {
@@ -761,13 +824,13 @@ public class DungeonManager {
             inst.addModifier(mod);
         };
 
-        updater.accept(org.bukkit.attribute.Attribute.ATTACK_DAMAGE, diff.getDamageMultiplier());
-        updater.accept(org.bukkit.attribute.Attribute.ARMOR, diff.getArmorMultiplier());
+        updater.accept(org.bukkit.attribute.Attribute.GENERIC_ATTACK_DAMAGE, diff.getDamageMultiplier());
+        updater.accept(org.bukkit.attribute.Attribute.GENERIC_ARMOR, diff.getArmorMultiplier());
 
         // adjust current health proportionally if max health changed
         try {
             org.bukkit.attribute.AttributeInstance hinst = ent
-                    .getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH);
+                    .getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH);
             if (hinst != null) {
                 double max = hinst.getValue();
                 ent.setHealth(Math.min(ent.getHealth(), max));
