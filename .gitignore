@@ -1,3 +1,10 @@
 target/
 # Ignore build directory
 build/
+# Serveur de test local : on ne versionne que la config et les scripts.
+# Tout le reste (jar, mondes, logs, cache, templates generes) est local.
+test-server/*
+!test-server/eula.txt
+!test-server/server.properties
+!test-server/ops.json
+!test-server/README-TEST.md

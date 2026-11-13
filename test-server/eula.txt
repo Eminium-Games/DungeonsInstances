@@ -1,0 +1,3 @@
+# eula.txt — accepté automatiquement pour le serveur de test local.
+# En lançant ce serveur vous acceptez l'EULA de Mojang : https://aka.ms/MinecraftEULA
+eula=true
